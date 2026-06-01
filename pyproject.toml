@@ -3,7 +3,7 @@ requires = ["uv_build >= 0.9.21, <0.10.0"]
 build-backend = "uv_build"
 
 [project]
-name = "pypackage_template"
+name = "keydeamon"
 version = "0.0.1"
 description = "A small example package managed with uv"
 readme = "README.md"
@@ -12,8 +12,7 @@ dependencies = [
     "polars==1.37.0",
 ]
 authors = [
-  { name = "J. Hathaway", email = "hathawayj@byui.edu" },
-  { name = "Co Author", email = "coauthor@example.com" }
+  { name = "Mitchell Mecham", email = "hathawayj@byui.edu" },
 ]
 
 # optional, if you want to distinguish current maintainers

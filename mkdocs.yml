@@ -1,4 +1,4 @@
-site_name: Example MkDocs Material Documentation for pypackage_template
+site_name: keydeamon
 site_url: https://byuirpytooling.github.io/pypackage_template
 theme:
   name: material
