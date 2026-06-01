@@ -1,8 +1,27 @@
-# API
+# API Reference
 
-::: pypackage_template.template_package.multiply
+## Public API
 
+::: keydaemon
+    options:
+      members:
+        - macro
+        - preset
+        - load
+        - stop_all
 
-::: pypackage_template.add_numbers.add
+## MacroBuilder
 
-::: pypackage_template.add_numbers
+::: keydaemon.builder.MacroBuilder
+
+## Actions
+
+::: keydaemon.actions
+
+## Scheduler
+
+::: keydaemon.scheduler.run_scheduled
+
+## Screen Utilities
+
+::: keydaemon.screen

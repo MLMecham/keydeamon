@@ -1,5 +1,5 @@
-site_name: keydeamon
-site_url: https://byuirpytooling.github.io/pypackage_template
+site_name: keydaemon
+site_url: https://mlmecham.github.io/keydaemon
 theme:
   name: material
   icon:
@@ -28,7 +28,7 @@ theme:
       accent: deep orange
 
 watch:
-  - src/pypackage_template
+  - src/keydaemon
 
 markdown_extensions:
   - attr_list
@@ -69,4 +69,4 @@ extra:
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/school/byu-idaho
 
-copyright: Copyright &copy; 2026 J. Hathaway
+copyright: Copyright &copy; 2026 MLMecham

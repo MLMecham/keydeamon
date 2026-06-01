@@ -3,33 +3,38 @@ requires = ["uv_build >= 0.9.21, <0.10.0"]
 build-backend = "uv_build"
 
 [project]
-name = "keydeamon"
-version = "0.0.1"
-description = "A small example package managed with uv"
+name = "keydaemon"
+version = "0.1.0"
+description = "Background daemon for keyboard/mouse automation — for gamers and developers"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "polars==1.37.0",
+    "pynput>=1.7.6",
+    "click>=8.0",
+    "Pillow>=10.0",
+    "platformdirs>=4.0",
+    "tomli>=2.0; python_version < '3.11'",
 ]
 authors = [
-  { name = "Mitchell Mecham", email = "hathawayj@byui.edu" },
+    { name = "MLMecham", email = "mechamit000@gmail.com" },
 ]
-
-# optional, if you want to distinguish current maintainers
 maintainers = [
-  { name = "Maintainer Name", email = "maintainer@example.com" }
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest",
-    "ruff",
-    { path = ".", develop = true },
+    { name = "MLMecham", email = "mechamit000@gmail.com" },
 ]
 
 [project.scripts]
-my-uv-cli = "my_uv_package.cli:main"
+keydaemon = "keydaemon.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov",
+    "ruff",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
 
 [tool.uv]
-# Here you can put uv-specific configuration if needed later
-# (you can leave this section out entirely for the simplest case)
+# uv-specific configuration
