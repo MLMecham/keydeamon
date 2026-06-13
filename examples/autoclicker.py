@@ -21,26 +21,24 @@ import keydaemon
 # Configuration
 # ---------------------------------------------------------------------------
 
-CPS = 10            # clicks per second
-BUTTON = "left"     # "left", "right", or "middle"
-CLICKS = 1          # clicks per fire — set 2 for double-clicks
-JITTER = 0.02       # +/- seconds of random timing wobble (0 = perfectly steady)
-TOGGLE_KEY = "f6"   # press to start clicking, press again to stop
-EXIT_KEY = "f8"     # press to quit the program
+CPS = 10  # clicks per second
+BUTTON = "left"  # "left", "right", or "middle"
+CLICKS = 1  # clicks per fire — set 2 for double-clicks
+JITTER = 0.02  # +/- seconds of random timing wobble (0 = perfectly steady)
+TOGGLE_KEY = "f6"  # press to start clicking, press again to stop
+EXIT_KEY = "f8"  # press to quit the program
 
 # ---------------------------------------------------------------------------
 # Build macro
 # ---------------------------------------------------------------------------
 
-interval = 1.0 / CPS
-
 runner = (
     keydaemon.macro()
-    .every(interval)
+    .times_per_second(CPS)
     .jitter(JITTER)
     .click(BUTTON, count=CLICKS)
     .loop()
-    .hotkey(TOGGLE_KEY)     # arm behind the toggle key instead of running immediately
+    .hotkey(TOGGLE_KEY)  # arm behind the toggle key instead of running immediately
     .exit_key(EXIT_KEY)
     .run()
 )

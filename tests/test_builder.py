@@ -1,3 +1,4 @@
+import pytest
 from keydaemon.builder import MacroBuilder
 from keydaemon.actions import (
     TapAction, WaitAction, ClickAction, MoveToAction,
@@ -28,6 +29,20 @@ def test_wait_appends_action():
 def test_every_sets_interval():
     b = MacroBuilder().every(60)
     assert b._interval == 60
+
+
+def test_times_per_second_sets_interval():
+    b = MacroBuilder().times_per_second(20)
+    assert b._interval == 0.05
+
+
+def test_times_per_second_is_inverse_of_every():
+    assert MacroBuilder().times_per_second(10)._interval == MacroBuilder().every(0.1)._interval
+
+
+def test_times_per_second_rejects_nonpositive():
+    with pytest.raises(ValueError):
+        MacroBuilder().times_per_second(0)
 
 
 def test_jitter_sets_jitter():

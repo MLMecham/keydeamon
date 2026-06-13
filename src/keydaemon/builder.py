@@ -42,6 +42,17 @@ class MacroBuilder:
         self._interval = seconds
         return self
 
+    def times_per_second(self, n: float) -> MacroBuilder:
+        """Set the loop rate as a frequency instead of a period.
+
+        ``times_per_second(20)`` is sugar for ``every(1 / 20)``. Clickers and
+        anti-AFK loops are easier to reason about in Hz than in seconds.
+        """
+        if n <= 0:
+            raise ValueError(f"times_per_second needs a positive rate, got {n!r}")
+        self._interval = 1.0 / n
+        return self
+
     def jitter(self, seconds: float) -> MacroBuilder:
         self._jitter = seconds
         return self
