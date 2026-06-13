@@ -114,3 +114,21 @@ def test_stop_self():
 def test_exit_key():
     b = MacroBuilder().exit_key("f6")
     assert b._exit_key == "f6"
+
+
+def test_hotkey_sets_key_and_default_mode():
+    b = MacroBuilder().hotkey("f6")
+    assert b._hotkey == "f6"
+    assert b._hotkey_mode == "toggle"
+
+
+def test_hotkey_explicit_mode():
+    b = MacroBuilder().hotkey("f6", mode="once")
+    assert b._hotkey_mode == "once"
+
+
+def test_hotkey_is_chainable():
+    b = MacroBuilder().every(0.1).click("left").loop().hotkey("f6").exit_key("f8")
+    assert b._hotkey == "f6"
+    assert b._exit_key == "f8"
+    assert b._repeat_times == LOOP_FOREVER

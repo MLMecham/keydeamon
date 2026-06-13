@@ -1,99 +1,204 @@
-# Building Python Packages
+# keydaemon
 
-We are following the guide from [Python Packages](https://py-pkgs.org/welcome) by Tomas Beuzen and Tiffany Timbers for the structure of this template repo.  This readme documents differences from their guide and elements that need to be changed in the repo once you use this template for your own named package.
+A lightweight, programmable keyboard/mouse automation daemon for personal use — a clean Python API and CLI instead of a GUI macro recorder. It runs quietly in the background: text expansion, anti-AFK loops, form filling, autoclickers, drawing, and pixel-watching.
 
-## Files to change once template is copied
+> **Not for** kernel-level anti-cheat games (Valorant, Fortnite, PUBG). **Fine for** Minecraft, singleplayer/private servers, productivity, and desktop automation.
 
-These files/folders need to be edited to use your package name instead of the `pypackage_template` name. The `pyproject.toml` will also need author editing.
+---
 
-- [`tests/test_template_package.py`](https://github.com/byuirpytooling/pypackage_template/blob/main/tests/test_template_package.py)
-- [`src/pypackage_template`](https://github.com/byuirpytooling/pypackage_template/tree/main/src/pypackage_template)
-- [`src/pypackage_template/__init__.py`](https://github.com/byuirpytooling/pypackage_template/blob/main/src/pypackage_template/__init__.py)
-- [`main/pyproject.toml`](https://github.com/byuirpytooling/pypackage_template/blob/main/pyproject.toml)
-- [`mkdocs.yml`](https://github.com/byuirpytooling/pypackage_template/blob/main/mkdocs.yml)
-- [`docs/API.md`](https://github.com/byuirpytooling/pypackage_template/blob/main/docs/API.md)
-
-## Differences from the Python Packages book
-
-###  Python Installation
-
-We will use [uv](https://docs.astral.sh/uv/guides/install-python/) instead of [conda](https://anaconda.org/anaconda/conda).
-
-### Installing uv and python
-
-1. Follow [uv's installation scripts](https://docs.astral.sh/uv/getting-started/installation/#installation-methods)
-2. Now run `uv python install --default`.
-  - You can see your available Python versions with `uv python list`.
-  - If you want a specific version of Python, you can run `uv python install 3.12,` for example.
-  - You can upgrade to the latest supported patch release for each version with `uv python upgrade`.
-
-## mkdocs-material
-
-1. mkdocs-material with `uv pip install mkdocs-material --system`
-2. [Guide on mkdocs-material](https://www.youtube.com/watch?v=xlABhbnNrfI) and his [companion website for this video](https://jameswillett.dev/getting-started-with-material-for-mkdocs/)
- - However, we are using `uv` and will use `uv run mkdocs new .` instead of `mkdocs new .`
-
-## Handy `uv` commands 
-
-### Installing the package in development into the Python environment 
-
-The `--editable` allows us to create an installation that points back to your project directory instead of copying the code into site-packages. With this, we can now edit the source files, and the installed package in the environment is automatically updated.
+## Install
 
 ```bash
-uv sync --editable
+uv sync --extra dev      # install with dev/test dependencies
+uv run pytest            # run the test suite
+uv run keydaemon --help  # the CLI
 ```
 
-With this run you can now run the following command to evaluate the package within the package specific Python that has the package installed
+Dependencies: `pynput` (input), `Pillow` (pixel color), `platformdirs` (data dir), `click` (CLI).
+
+---
+
+## Quick start
+
+### Python API — the fluent builder
+
+Everything is built with `keydaemon.macro()` and runs when you call `.run()`:
+
+```python
+import keydaemon
+
+# Press space every 60s (±5s jitter), forever:
+keydaemon.macro().every(60).jitter(5).tap("space").loop().run()
+
+# Hold shift, tap A, release shift:
+keydaemon.macro().press("shift").tap("a").release("shift").run()
+
+# Move, click, and type:
+keydaemon.macro().move_to(234, 456).click().type("hello").run()
+```
+
+`.run()` returns a runner. Keep the process alive with `.join()`, or stop early with `.stop()`:
+
+```python
+runner = keydaemon.macro().every(30).tap("space").loop().run()
+runner.stop()          # stop this macro
+keydaemon.stop_all()   # stop everything, everywhere
+```
+
+### Autoclicker (toggle hotkey)
+
+The autoclicker is armed behind a hotkey: it sits idle until you press the toggle key, clicks while on, and toggles off on the next press — the process stays alive the whole time.
+
+```python
+import keydaemon
+keydaemon.preset("autoclicker").run().join()
+```
+
+- **O** → start/stop clicking (hover your cursor over the target first)
+- **Esc** → quit
+
+Run it straight from the preset file:
 
 ```bash
-uv run python
+uv run python -m keydaemon.presets.autoclicker
 ```
 
-### Examining the Documentation
+Or use the configurable script (clicks-per-second, button, double-click, keys) in [`examples/autoclicker.py`](examples/autoclicker.py).
 
-Because of the `WATCH:` options in the `mkdocs.yml` we can now make edits to our function details and see the edits in real time with
+---
+
+## Triggers — *when* a macro fires
+
+| Trigger | How it starts | Builder / TOML |
+|---|---|---|
+| **Loop** | Immediately, on a timer | `.every(s).loop()` — `type = "loop"` |
+| **Hotkey** | When you press a key (toggle or once) | `.hotkey(key, mode)` — `type = "manual"`, `hotkey`, `mode` |
+| **Expand** | When you type a text pattern | `type = "expand"`, `pattern` |
+| **Profile** | Starts several macros together | `type = "profile"`, `macros.run = [...]` |
+
+### Hotkey toggle in detail
+
+```python
+# Press F6 to start the loop, press F6 again to stop. Esc quits the program.
+keydaemon.macro().every(0.1).click("left").loop().hotkey("f6").exit_key("esc").run().join()
+```
+
+- `mode="toggle"` (default) — same key starts and stops, repeatedly.
+- `mode="once"` — each press fires the loop a single time.
+
+Because the program stays armed between presses, the toggle key *is* your start button — there's no startup countdown to race.
+
+---
+
+## Tools — *what* a macro does (actions)
+
+### Keyboard
+| Builder | Description |
+|---|---|
+| `.tap("w")` | Press + release (random 40–80 ms hold by default) |
+| `.tap("w", 0.15)` | Press + release with an explicit hold |
+| `.press("shift")` | Press and hold (until released) |
+| `.release("shift")` | Release a held key |
+| `.type("hello world")` | Type a string |
+| `.sequence(["w","a","s","d"])` | Tap several keys in order |
+
+### Mouse
+| Builder | Description |
+|---|---|
+| `.move_to(x, y)` | Teleport cursor to an absolute position (±5 px jitter) |
+| `.move_by(dx, dy)` | Relative move (use while a button is held, for drags) |
+| `.move_to(x, y, smooth=True)` | Curved, multi-step movement |
+| `.click("left")` | Click at the current position |
+| `.click("left", count=2)` | Double-click |
+| `.scroll(3)` / `.scroll(-3)` | Scroll down / up |
+| `.drag_to(x1,y1,x2,y2)` | Move, hold left, smooth-drag, release |
+
+`press`/`release` work for both keys and mouse buttons (`"left"`, `"right"`, `"middle"`).
+
+### Screen conditions
+| Builder | Description |
+|---|---|
+| `.wait_for_color(x, y, "#3A7D44")` | Pause until the pixel matches a color |
+| `.wait_for_color(x, y, "#3A7D44", timeout=30)` | Same, but raise after 30 s |
+
+### Timing & anti-detection
+| Builder | Description |
+|---|---|
+| `.every(seconds)` | Delay between loop iterations |
+| `.jitter(seconds)` | ± random wobble added to the interval |
+| `.loop()` / `.loop(n)` | Run forever / `n` times |
+| `.repeat(n)` | Alias for a finite count |
+
+Tap durations and `move_to` landing points are randomized by default, so output isn't perfectly robotic.
+
+---
+
+## Stopping safely
+
+keydaemon is built so a runaway thread can't survive. Every runner auto-registers in a global backstop, and `stop()` is idempotent and cascades to any child it owns.
+
+| Key / call | Scope |
+|---|---|
+| `exit_key("esc")` | Stop this macro/profile |
+| Toggle hotkey (e.g. `O`) | Pause/resume the clicker (program stays alive) |
+| **Ctrl + Shift + Alt + F12** | Emergency kill — stops **every** macro, always |
+| `keydaemon.stop_all()` / `keydaemon stop` | Stop everything |
+
+When a macro stops, only mouse buttons it was actually *holding* are released — so a plain clicker sends no stray events on stop.
+
+---
+
+## CLI
+
+Macros live as TOML files in your OS data dir (`%APPDATA%\keydaemon\macros\` on Windows).
 
 ```bash
-uv run mkdocs serve
+keydaemon run my_macro              # run a macro or profile (Ctrl+C to stop)
+keydaemon run my_macro --detach     # run in the background
+keydaemon stop                      # stop all
+keydaemon list                      # list macros and profiles
+keydaemon new my_macro --type manual  # scaffold a hotkey macro (loop/expand/manual/profile)
+keydaemon capture my_macro          # click-to-record mouse positions
+keydaemon capture my_macro --color  # hover + F9 to record pixel colors
+keydaemon enable my_macro / disable my_macro
 ```
 
-After you have the docs as you want you will need to build them to the `docs` folder for Github.
+A hotkey-toggle clicker as a TOML macro (`keydaemon new clicker --type manual`):
 
-```bash
-uv run mkdocs build
+```toml
+[trigger]
+type = "manual"
+hotkey = "f6"      # press to start/stop
+mode = "toggle"
+
+[behavior]
+every = 0.1
+jitter = 0.02
+repeat = -1        # -1 = loop until toggled off
+
+[actions]
+sequence = ["click:left"]
 ```
 
-### Install a package from Github repository
+---
 
-```bash
-uv pip install "git+https://github.com/byuirpytooling/simplefunctsp.git@main"
+## Built-in presets
+
+| Preset | What it does |
+|---|---|
+| `autoclicker` | Toggle-hotkey left-clicker (O toggles, Esc quits) |
+| `minecraft_afk` | Singleplayer anti-AFK: nudge forward/back/jump every ~4.5 min |
+
+```python
+keydaemon.preset("autoclicker").run().join()
+keydaemon.preset("minecraft_afk").run()
 ```
 
-## Directory structure
+---
 
-```bash
-pypackage_template
-├── .readthedocs.yml           ┐
-├── CHANGELOG.md               │
-├── CONDUCT.md                 │
-├── CONTRIBUTING.md            │
-├── docs                       │
-│   ├── changelog.md           │
-│   ├── conduct.md             │
-│   ├── conf.py                │ 
-│   ├── contributing.md        │ Package documentation
-│   ├── example.ipynb          │
-│   ├── index.md               │
-│   ├── make.bat               │
-│   ├── Makefile               │
-│   └── requirements.txt       │
-├── LICENSE                    │
-├── README.md                  ┘
-├── pyproject.toml             ┐ 
-├── src                        │
-│   └── pypackage_template     │ Package source code, metadata,
-│       ├── __init__.py        │ and build instructions 
-│       └── pycounts.py        ┘
-└── tests                      ┐
-    └── test_pycounts.py       ┘ Package tests
-```
+## Examples
+
+- [`examples/autoclicker.py`](examples/autoclicker.py) — configurable autoclicker (rate, button, keys)
+- [`examples/flower.py`](examples/flower.py) — draws a rose-curve flower in a browser sketch app
+
+See [`PLAN.md`](PLAN.md) for the full architecture and design notes.

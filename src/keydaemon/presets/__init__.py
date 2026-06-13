@@ -1,3 +1,3 @@
 """Built-in presets. Load with keydaemon.preset("name")."""
 
-__all__ = ["minecraft_afk"]
+__all__ = ["autoclicker", "minecraft_afk"]

@@ -62,7 +62,13 @@ start_on_boot = false
 
 [trigger]
 type = "manual"
-# hotkey = "f6"   # optional: press this key to trigger
+hotkey = "f6"      # press this key to start/stop the sequence
+mode = "toggle"    # "toggle" = press to start, press again to stop; "once" = fire once per press
+
+[behavior]
+every = 0.1        # seconds between repeats (omit for a single pass)
+jitter = 0.02      # ± random seconds
+repeat = -1        # -1 = loop until toggled off, N = run N times
 
 [actions]
 sequence = [
@@ -105,7 +111,7 @@ def run(name: str, detach: bool) -> None:
     from keydaemon._paths import macro_path
     from keydaemon.loader import is_profile, load_macro, load_profile
     from keydaemon.profile import Profile, stop_all
-    from keydaemon.runner import DaemonRunner, ExpandRunner
+    from keydaemon.runner import make_runner
 
     click.echo(f"Emergency kill: {GLOBAL_KILL_KEY}  (or: keydaemon stop)")
 
@@ -113,44 +119,14 @@ def run(name: str, detach: bool) -> None:
         macro_names = load_profile(name)
         p = Profile(name=name)
         for mname in macro_names:
-            lm = load_macro(mname)
-            if lm.trigger_type == "expand":
-                runner = ExpandRunner(
-                    pattern=lm.expand_pattern or "",
-                    replace=lm.expand_replace,
-                    actions=lm.actions if not lm.expand_replace else None,
-                )
-            else:
-                runner = DaemonRunner(
-                    actions=lm.actions,
-                    interval=lm.interval,
-                    repeat_times=lm.repeat_times,
-                    jitter=lm.jitter,
-                )
-            p.add_runner(runner)
+            p.add_runner(make_runner(load_macro(mname)))
         p.start()
         click.echo(f"Running profile '{name}' with {len(macro_names)} macro(s). Ctrl+C to stop.")
     else:
         lm = load_macro(name)
-        if lm.trigger_type == "expand":
-            runner = ExpandRunner(
-                pattern=lm.expand_pattern or "",
-                replace=lm.expand_replace,
-                actions=lm.actions if not lm.expand_replace else None,
-            )
-            p = Profile(name=name, exit_key=lm.exit_key)
-            p.add_runner(runner)
-            p.start()
-        else:
-            runner = DaemonRunner(
-                actions=lm.actions,
-                interval=lm.interval,
-                repeat_times=lm.repeat_times,
-                jitter=lm.jitter,
-            )
-            p = Profile(name=name, exit_key=lm.exit_key)
-            p.add_runner(runner)
-            p.start()
+        p = Profile(name=name, exit_key=lm.exit_key)
+        p.add_runner(make_runner(lm))
+        p.start()
         click.echo(f"Running '{name}'. Ctrl+C to stop.")
 
     try:

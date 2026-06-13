@@ -77,9 +77,21 @@ class Profile:
 
 
 def stop_all() -> None:
-    """Stop every active profile."""
+    """
+    Kill everything. Two independent passes so nothing can survive:
+
+    1. Ordered teardown through the profile tree — stops runners the clean way
+       (releases held inputs, stops listeners child-first).
+    2. Flat backstop sweep of every runner ever created — catches anything the
+       tree can't reach (e.g. a child whose owning profile was garbage collected,
+       since _PROFILE_REGISTRY holds only weak references).
+
+    Runner.stop() is idempotent, so a runner hit by both passes stops once.
+    """
     for profile in list(_PROFILE_REGISTRY):
         profile.stop()
+    from keydaemon.runner import stop_all_runners
+    stop_all_runners()
 
 
 def _check_macos_permissions() -> None:

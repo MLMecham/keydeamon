@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import threading
 import time
 from dataclasses import dataclass, field
 from typing import Callable, Protocol
@@ -37,6 +38,15 @@ def _resolve_button(name: str, Button: object) -> object:
     return resolved
 
 
+# Mouse buttons currently held down (a press: with no matching release: yet).
+# A stop releases ONLY these — releasing a button that was never pressed injects a
+# spurious "button up" event, and a stray right-button-up makes apps like the
+# Ruffle Flash player open their right-click context menu. A plain clicker holds
+# nothing, so its stop must release nothing.
+_held_mouse_buttons: set[str] = set()
+_held_lock = threading.Lock()
+
+
 # ---------------------------------------------------------------------------
 # Keyboard actions
 # ---------------------------------------------------------------------------
@@ -62,6 +72,8 @@ class PressAction:
         if self.key in MOUSE_BUTTONS:
             btn = _resolve_button(self.key, ctrl.Button)
             ctrl.mouse.press(btn)
+            with _held_lock:
+                _held_mouse_buttons.add(self.key)
         else:
             ctrl.keyboard.press(_resolve_key(self.key, ctrl.Key))
 
@@ -74,6 +86,8 @@ class ReleaseAction:
         if self.key in MOUSE_BUTTONS:
             btn = _resolve_button(self.key, ctrl.Button)
             ctrl.mouse.release(btn)
+            with _held_lock:
+                _held_mouse_buttons.discard(self.key)
         else:
             ctrl.keyboard.release(_resolve_key(self.key, ctrl.Key))
 

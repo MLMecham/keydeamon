@@ -78,24 +78,10 @@ class _ProfileBuilder(MacroBuilder):
     def run(self):  # type: ignore[override]
         from keydaemon.loader import load_macro
         from keydaemon.profile import Profile
-        from keydaemon.runner import DaemonRunner, ExpandRunner
+        from keydaemon.runner import make_runner
 
         p = Profile(name=self._profile_name)
         for name in self._macro_names:
-            lm = load_macro(name)
-            if lm.trigger_type == "expand":
-                runner = ExpandRunner(
-                    pattern=lm.expand_pattern or "",
-                    replace=lm.expand_replace,
-                    actions=lm.actions if not lm.expand_replace else None,
-                )
-            else:
-                runner = DaemonRunner(
-                    actions=lm.actions,
-                    interval=lm.interval,
-                    repeat_times=lm.repeat_times,
-                    jitter=lm.jitter,
-                )
-            p.add_runner(runner)
+            p.add_runner(make_runner(load_macro(name)))
         p.start()
         return p

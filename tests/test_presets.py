@@ -30,6 +30,34 @@ def test_minecraft_afk_has_actions():
     assert len(b._actions) > 0
 
 
+def test_autoclicker_returns_builder():
+    b = keydaemon.preset("autoclicker")
+    assert isinstance(b, MacroBuilder)
+
+
+def test_autoclicker_loops_forever():
+    b = keydaemon.preset("autoclicker")
+    assert b._repeat_times == LOOP_FOREVER
+
+
+def test_autoclicker_is_toggle_hotkey():
+    from keydaemon.presets import autoclicker
+
+    b = keydaemon.preset("autoclicker")
+    # Assert against the single source of truth, not a duplicated literal, so the
+    # binding, the startup message, and this test can never drift apart.
+    assert b._hotkey == autoclicker.TOGGLE_KEY
+    assert b._hotkey_mode == "toggle"
+    assert b._exit_key == autoclicker.EXIT_KEY
+
+
+def test_autoclicker_has_a_click_action():
+    from keydaemon.actions import ClickAction
+
+    b = keydaemon.preset("autoclicker")
+    assert any(isinstance(a, ClickAction) for a in b._actions)
+
+
 def test_unknown_preset_raises_import_error():
     with pytest.raises(ImportError, match="No preset named"):
         keydaemon.preset("nonexistent_preset_xyz")

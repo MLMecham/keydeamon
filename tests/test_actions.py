@@ -55,6 +55,29 @@ def test_release_mouse_button():
     ctrl.mouse.release.assert_called_once()
 
 
+def test_press_mouse_marks_held_and_release_clears():
+    from keydaemon.actions import _held_mouse_buttons, _held_lock
+
+    with _held_lock:
+        _held_mouse_buttons.clear()
+    ctrl = _ctrl()
+    PressAction(key="right").execute(ctrl)
+    assert "right" in _held_mouse_buttons
+    ReleaseAction(key="right").execute(ctrl)
+    assert "right" not in _held_mouse_buttons
+
+
+def test_click_does_not_mark_button_held():
+    # A clicker holds nothing — so a later stop releases nothing (no stray events).
+    from keydaemon.actions import _held_mouse_buttons, _held_lock
+
+    with _held_lock:
+        _held_mouse_buttons.clear()
+    ctrl = _ctrl()
+    ClickAction(button="left").execute(ctrl)
+    assert "left" not in _held_mouse_buttons
+
+
 def test_type_action():
     ctrl = _ctrl()
     TypeAction(text="hello").execute(ctrl)

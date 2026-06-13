@@ -151,6 +151,8 @@ class LoadedMacro:
         exit_key: str | None,
         expand_pattern: str | None,
         expand_replace: str | None,
+        hotkey: str | None = None,
+        hotkey_mode: str = "toggle",
     ) -> None:
         self.name = name
         self.trigger_type = trigger_type
@@ -161,6 +163,8 @@ class LoadedMacro:
         self.exit_key = exit_key
         self.expand_pattern = expand_pattern
         self.expand_replace = expand_replace
+        self.hotkey = hotkey
+        self.hotkey_mode = hotkey_mode
 
 
 def load_macro(name: str) -> LoadedMacro:
@@ -206,6 +210,8 @@ def load_macro(name: str) -> LoadedMacro:
         exit_key=exit_key,
         expand_pattern=None,
         expand_replace=None,
+        hotkey=trigger.get("hotkey"),
+        hotkey_mode=trigger.get("mode", "toggle"),
     )
 
 

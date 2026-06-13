@@ -19,7 +19,7 @@ from keydaemon.actions import (
 )
 
 if TYPE_CHECKING:
-    from keydaemon.runner import DaemonRunner
+    from keydaemon.runner import DaemonRunner, HotkeyRunner
 
 
 class MacroBuilder:
@@ -31,6 +31,8 @@ class MacroBuilder:
         self._repeat_times: int = 1
         self._jitter: float = 0.0
         self._exit_key: str | None = None
+        self._hotkey: str | None = None
+        self._hotkey_mode: str = "toggle"
 
     # ------------------------------------------------------------------
     # Scheduling
@@ -54,6 +56,18 @@ class MacroBuilder:
 
     def exit_key(self, key: str) -> MacroBuilder:
         self._exit_key = key
+        return self
+
+    def hotkey(self, key: str, mode: str = "toggle") -> MacroBuilder:
+        """
+        Arm this macro behind a hotkey instead of running immediately.
+
+        mode="toggle" (default): press the key to start the loop, press again to
+        stop it. mode="once": each press fires the loop a single time.
+        The program stays alive between presses; use exit_key to quit entirely.
+        """
+        self._hotkey = key
+        self._hotkey_mode = mode
         return self
 
     # ------------------------------------------------------------------
@@ -143,16 +157,26 @@ class MacroBuilder:
     # Execution
     # ------------------------------------------------------------------
 
-    def run(self) -> DaemonRunner:
-        from keydaemon.runner import DaemonRunner
+    def run(self) -> DaemonRunner | HotkeyRunner:
+        from keydaemon.runner import DaemonRunner, HotkeyRunner
         from keydaemon.profile import Profile
 
-        runner = DaemonRunner(
-            actions=list(self._actions),
-            interval=self._interval,
-            repeat_times=self._repeat_times,
-            jitter=self._jitter,
-        )
+        if self._hotkey is not None:
+            runner = HotkeyRunner(
+                hotkey=self._hotkey,
+                actions=list(self._actions),
+                interval=self._interval,
+                repeat_times=self._repeat_times,
+                jitter=self._jitter,
+                mode=self._hotkey_mode,
+            )
+        else:
+            runner = DaemonRunner(
+                actions=list(self._actions),
+                interval=self._interval,
+                repeat_times=self._repeat_times,
+                jitter=self._jitter,
+            )
         p = Profile(exit_key=self._exit_key)
         p.add_runner(runner)
         p.start()
