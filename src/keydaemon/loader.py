@@ -145,6 +145,7 @@ class LoadedMacro:
         hotkey: str | None = None,
         hotkey_mode: str = "toggle",
         description: str = "",
+        expansions: dict[str, str] | None = None,
     ) -> None:
         self.name = name
         self.trigger_type = trigger_type
@@ -158,6 +159,7 @@ class LoadedMacro:
         self.hotkey = hotkey
         self.hotkey_mode = hotkey_mode
         self.description = description
+        self.expansions = expansions or {}
 
 
 def load_macro(name: str) -> LoadedMacro:
@@ -176,6 +178,22 @@ def load_macro(name: str) -> LoadedMacro:
     if trigger_type == "expand":
         expand_actions = _parse_sequence(actions_data.get("sequence", []), path, seen)
         ensure_kill_key_unreachable(expand_actions, exit_key=exit_key, name=name)
+        pattern = trigger.get("pattern")
+        replace = behavior.get("replace")
+        expansions = dict(data.get("expansions", {}))
+
+        # No pattern may appear inside any replacement — typing that
+        # replacement would re-trigger an expansion forever.
+        all_patterns = list(expansions) + ([pattern] if pattern else [])
+        all_replacements = list(expansions.values()) + ([replace] if replace else [])
+        for pat in all_patterns:
+            for rep in all_replacements:
+                if pat in rep:
+                    raise ValueError(
+                        f"Macro {name!r}: replacement text {rep!r} contains the "
+                        f"trigger pattern {pat!r} — typing it would re-trigger "
+                        f"an expansion forever"
+                    )
         return LoadedMacro(
             name=name,
             trigger_type="expand",
@@ -184,9 +202,10 @@ def load_macro(name: str) -> LoadedMacro:
             repeat_times=1,
             jitter=0.0,
             exit_key=exit_key,
-            expand_pattern=trigger.get("pattern"),
-            expand_replace=behavior.get("replace"),
+            expand_pattern=pattern,
+            expand_replace=replace,
             description=meta.get("description", ""),
+            expansions=expansions,
         )
 
     repeat_raw = behavior.get("repeat", 1)

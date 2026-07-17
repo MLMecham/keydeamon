@@ -43,39 +43,43 @@ Running 'autoclicker'. Ctrl+C to stop.
 
 Hover over your target, press ++f6++, and the daemon clicks ~4×/second with human-ish jitter until you press ++f6++ again. ++f8++ quits. The preset installed itself as an ordinary TOML file — edit it to make it yours.
 
-## Two ways to define a macro
+## Build in Python, run from the CLI
 
-=== "Python — the fluent builder"
+Write a macro with the fluent builder, try it, then `.save()` it — that writes an ordinary TOML into your macros dir, and it becomes a first-class CLI macro:
 
-    ```python
-    import keydaemon
+```python
+import keydaemon
 
-    # Press space every 60s (±5s jitter), forever:
-    keydaemon.macro().every(60).jitter(5).tap("space").loop().run()
+# Hotkey-armed clicker: F6 toggles, F8 quits. Try it:
+clicker = keydaemon.macro().every(0.1).click("left").loop().hotkey("f6").exit_key("f8")
+clicker.run().join()
 
-    # Hotkey-armed clicker: F6 toggles, Esc quits.
-    keydaemon.macro().every(0.1).click("left").loop().hotkey("f6").exit_key("esc").run().join()
-    ```
+# Like it? Make it permanent:
+clicker.save("clicker")
+```
 
-=== "TOML — a file in your macros dir"
+```bash
+keydaemon run clicker            # from any terminal, from now on
+keydaemon run clicker --detach   # or as a background process
+```
 
-    ```toml
-    [trigger]
-    type = "manual"
-    hotkey = "f6"      # press to start/stop
-    mode = "toggle"
+Saving again overwrites — your Python script is the source of truth. The TOML it writes is human-readable and hand-editable:
 
-    [behavior]
-    every = 0.1
-    jitter = 0.02
-    repeat = -1        # loop until toggled off
+```toml
+[trigger]
+type = "manual"
+hotkey = "f6"      # press to start/stop
+mode = "toggle"
 
-    [actions]
-    sequence = ["click:left"]
-    ```
+[behavior]
+every = 0.1
+repeat = -1        # loop until toggled off
 
-    Save as `clicker.toml` in the macros dir (or scaffold one with
-    `keydaemon new clicker --type manual`), then `keydaemon run clicker`.
+[actions]
+sequence = ["click:left"]
+```
+
+[More recipes — expansion, anti-AFK, form filling :material-arrow-right:](examples.md){ .md-button }
 
 ## Triggers — *when* a macro fires
 
@@ -83,7 +87,7 @@ Hover over your target, press ++f6++, and the daemon clicks ~4×/second with hum
 |---|---|---|
 | **Loop** | Immediately, on a timer | `.every(s).loop()` — `type = "loop"` |
 | **Hotkey** | When you press a key (toggle or once) | `.hotkey(key, mode)` — `type = "manual"`, `hotkey`, `mode` |
-| **Expand** | When you type a text pattern | `type = "expand"`, `pattern` |
+| **Expand** | When you type a text pattern — bank many per macro | `.expand(pattern, replace)` chained — `type = "expand"`, `[expansions]` |
 | **Profile** | Starts several macros together | `type = "profile"`, `macros.run = [...]` |
 
 ## The daemon always lets go

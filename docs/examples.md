@@ -1,76 +1,97 @@
 # Examples
 
-Real recipes, shortest first. Python versions use the fluent builder; most have a TOML twin you can drop in your macros dir.
+The workflow is always the same: **write it in Python, run it, and when you like it, `.save("name")` it** — that writes a TOML into your macros dir, and from then on it's a first-class CLI macro (`keydaemon run name`, `--detach`, `stop`, `list`). Saving again overwrites: your Python script is the source of truth.
 
-## Autoclicker
+```python
+import keydaemon
 
-=== "CLI (built-in preset)"
+macro = keydaemon.macro().every(60).jitter(5).tap("space").loop()
+macro.run()             # try it right now
+macro.save("anti_afk")  # → keydaemon run anti_afk, from any terminal, forever
+```
 
-    ```bash
-    keydaemon run autoclicker
-    # F6 toggles clicking, F8 quits.
-    # First run installs autoclicker.toml — edit it to change keys or speed.
-    ```
+---
 
-=== "Python"
+## Text expansion — a bank of snippets
 
-    ```python
-    import keydaemon
+What makes an expansion different from other macros is the **trigger**: a loop starts on a timer and a hotkey macro starts on one bound key, but an expansion fires when you *type a string* — anywhere, in any app. The trigger text is backspaced away and the replacement typed in its place. Typed triggers are unlimited: they cost zero key bindings, so you can bank as many as you want behind **one** listener:
 
-    keydaemon.preset("autoclicker").run().join()
-    ```
+```python
+import keydaemon
 
-=== "From scratch"
+(keydaemon.macro()
+    .expand("///sig", "Mitchell Mecham | mechamit000@gmail.com")
+    .expand("///gg",  "good game, well played!")
+    .expand("///brb", "be right back — grabbing food")
+    .save("snippets"))
+```
 
-    ```python
-    import keydaemon
+```bash
+keydaemon run snippets --detach     # now it's a background service
+```
 
-    (keydaemon.macro()
-        .times_per_second(4)      # rate in Hz — sugar for .every(0.25)
-        .jitter(0.06)             # human-ish wobble
-        .click("left")
-        .loop()
-        .hotkey("f6")             # press to start, press again to stop
-        .exit_key("f8")           # press to quit entirely
-        .run()
-        .join())
-    ```
+```text
+Expansions armed: '///sig', '///gg', '///brb'.
+Running 'snippets'. Ctrl+C to stop.
+```
 
-A fully configurable script (button, double-click, rate, keys) lives at [`examples/autoclicker.py`](https://github.com/MLMecham/keydeamon/blob/main/examples/autoclicker.py).
-
-## Minecraft anti-AFK
-
-=== "CLI"
-
-    ```bash
-    keydaemon run minecraft_afk --detach     # runs in the background
-    keydaemon stop minecraft_afk             # when you're done
-    ```
-
-=== "Python"
-
-    ```python
-    import keydaemon
-
-    keydaemon.preset("minecraft_afk").run()
-    # steps forward, back, and jumps every ~4.5 min (±30s)
-    ```
-
-!!! warning
-    Singleplayer / private servers only. Don't take this near anti-cheat.
-
-## Text expansion
-
-Type `///sig` anywhere and it becomes your signature:
+The saved TOML *is* your snippet list — one readable file, edit it any time:
 
 ```toml
 [trigger]
 type = "expand"
-pattern = "///sig"
 
-[behavior]
-replace = "Mitchell Mecham | mechamit000@gmail.com"
+[expansions]
+"///sig" = "Mitchell Mecham | mechamit000@gmail.com"
+"///gg"  = "good game, well played!"
+"///brb" = "be right back — grabbing food"
 ```
+
+An expansion can also *run actions* instead of typing text — here, typing `///reload` erases itself and taps ++f5++:
+
+```python
+keydaemon.macro().tap("f5").wait(0.2).expand("///reload").run().join()
+```
+
+!!! tip "Pattern rules"
+    Keep patterns lowercase — pressing a modifier key (like ++shift++) mid-pattern resets the match. And no pattern may appear inside any replacement in the bank (typing that replacement would re-trigger forever) — rejected at build time and at load time.
+
+## Autoclicker
+
+```python
+import keydaemon
+
+(keydaemon.macro()
+    .times_per_second(4)      # rate in Hz — sugar for .every(0.25)
+    .jitter(0.06)             # human-ish wobble
+    .click("left")
+    .loop()
+    .hotkey("f6")             # press to start, press again to stop
+    .exit_key("f8")           # press to quit entirely
+    .run()
+    .join())
+```
+
+Prefer to skip the script? It's already built in — `keydaemon run autoclicker` installs and runs the same thing, and [`examples/autoclicker.py`](https://github.com/MLMecham/keydeamon/blob/main/examples/autoclicker.py) is a fully configurable version (button, double-click, rate, keys).
+
+## Minecraft anti-AFK
+
+```python
+import keydaemon
+
+(keydaemon.macro()
+    .every(270).jitter(30)    # every ~4.5 min, ±30s
+    .tap("w").wait(0.1)       # step forward
+    .tap("s").wait(0.05)      # step back
+    .tap("space")             # jump
+    .loop()
+    .save("afk"))             # → keydaemon run afk --detach
+```
+
+Also built in: `keydaemon run minecraft_afk`.
+
+!!! warning
+    Singleplayer / private servers only. Don't take this near anti-cheat.
 
 ## Hold a key while a condition is met
 
@@ -98,10 +119,10 @@ import keydaemon
     .tap("tab").type("Mecham")
     .tap("tab").type("mechamit000@gmail.com")
     .move_to(510, 640).click()             # submit
-    .run())
+    .save("my_form"))                      # → keydaemon run my_form
 ```
 
-Record the coordinates by clicking through the form once with `keydaemon capture my_form`.
+Don't type coordinates by hand — click through the form once with `keydaemon capture my_form` and the positions are recorded for you.
 
 ## Draw a flower
 
@@ -111,21 +132,20 @@ Record the coordinates by clicking through the form once with `keydaemon capture
 uv run python examples/flower.py
 ```
 
-## Compose macros with `do`
+## Under the hood: what `.save()` writes
+
+`.save("signature")` produces an ordinary macro TOML — the same format `keydaemon new` scaffolds and the built-in presets install. Edit it by hand, or re-run your Python script to stamp it again:
 
 ```toml
-# farm_sequence.toml — reuses open_inventory.toml inline
+[meta]
+name = "signature"
+
 [trigger]
-type = "loop"
+type = "expand"
+pattern = "///sig"
 
 [behavior]
-every = 10
-jitter = 2
-
-[actions]
-sequence = [
-    "do:open_inventory",    # flattened at load time, cycles rejected
-    "tap:e",
-    "do:close_inventory",
-]
+replace = "Mitchell Mecham | mechamit000@gmail.com"
 ```
+
+TOML files can also reference each other with `do:` — `"do:open_inventory"` inlines another macro's sequence at load time (cycles rejected). That part has no Python equivalent yet; compose in Python with ordinary function calls instead.

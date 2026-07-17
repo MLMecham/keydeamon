@@ -152,3 +152,72 @@ sequence = ["tap:space"]
     )
     monkeypatch.setattr(loader, "macro_path", lambda name: path)
     assert loader.load_macro("descd").description == "Does a thing."
+
+
+def test_self_triggering_expansion_rejected(tmp_path, monkeypatch):
+    path = _write(
+        tmp_path,
+        "looper",
+        """
+[meta]
+name = "looper"
+
+[trigger]
+type = "expand"
+pattern = "///a"
+
+[behavior]
+replace = "see ///a above"
+""",
+    )
+    monkeypatch.setattr(loader, "macro_path", lambda name: path)
+
+    import pytest
+    with pytest.raises(ValueError, match="re-trigger"):
+        loader.load_macro("looper")
+
+
+def test_expansions_table_loads(tmp_path, monkeypatch):
+    path = _write(
+        tmp_path,
+        "snippets",
+        """
+[meta]
+name = "snippets"
+
+[trigger]
+type = "expand"
+
+[expansions]
+"///a" = "Hello"
+"///b" = "cool dudes only"
+""",
+    )
+    monkeypatch.setattr(loader, "macro_path", lambda name: path)
+
+    lm = loader.load_macro("snippets")
+    assert lm.trigger_type == "expand"
+    assert lm.expansions == {"///a": "Hello", "///b": "cool dudes only"}
+
+
+def test_expansions_bank_cross_trigger_rejected(tmp_path, monkeypatch):
+    path = _write(
+        tmp_path,
+        "bad",
+        """
+[meta]
+name = "bad"
+
+[trigger]
+type = "expand"
+
+[expansions]
+"///a" = "Hello"
+"///b" = "see ///a for details"
+""",
+    )
+    monkeypatch.setattr(loader, "macro_path", lambda name: path)
+
+    import pytest
+    with pytest.raises(ValueError, match="re-trigger"):
+        loader.load_macro("bad")

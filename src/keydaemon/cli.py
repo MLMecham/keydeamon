@@ -45,12 +45,13 @@ start_on_boot = false
 
 [trigger]
 type = "expand"
-pattern = "///{name}"
 
-[behavior]
-replace = "your replacement text here"
-# OR to run a sub-macro instead of typing text:
-# do = "macro_name"
+# Your snippet bank: type a pattern anywhere and it becomes the replacement.
+# Add as many as you like — they all share one keyboard listener.
+[expansions]
+"///{name}" = "your replacement text here"
+# "///sig" = "Your Name | you@example.com"
+# "///gg"  = "good game, well played!"
 """,
     "manual": """\
 [meta]
@@ -256,8 +257,14 @@ def _controls_line(lm) -> str:
     """Describe a LoadedMacro's controls, derived from its actual bindings so
     the text can never disagree with what the keys really do."""
     parts: list[str] = []
-    if lm.trigger_type == "expand" and lm.expand_pattern:
-        parts.append(f"Type '{lm.expand_pattern}' to trigger.")
+    if lm.trigger_type == "expand":
+        expansions = getattr(lm, "expansions", {}) or {}
+        if expansions:
+            parts.append(
+                "Expansions armed: " + ", ".join(f"'{p}'" for p in expansions) + "."
+            )
+        if lm.expand_pattern:
+            parts.append(f"Type '{lm.expand_pattern}' to trigger.")
     if lm.hotkey:
         if lm.hotkey_mode == "once":
             parts.append(f"Press {_fmt_key(lm.hotkey)} to fire once per press.")

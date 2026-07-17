@@ -74,6 +74,11 @@ type = "loop"              # loop | manual | expand | profile
 # hotkey = "f6"            # manual only: arm behind a hotkey
 # mode = "toggle"          # toggle (press start/press stop) or once
 
+# expand only — a bank of snippets, all sharing one keyboard listener:
+# [expansions]
+# "///sig" = "Your Name | you@example.com"
+# "///gg"  = "good game, well played!"
+
 [behavior]
 every = 270                # seconds between runs
 jitter = 30                # ± random seconds (anti-detection)

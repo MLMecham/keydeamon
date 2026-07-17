@@ -89,23 +89,41 @@ def builder_to_toml(b: MacroBuilder, name: str, description: str = "") -> str:
     if b._exit_key:
         lines.append(f'exit_key = "{b._exit_key}"')
 
+    expansions: dict[str, str] = getattr(b, "_expansions", {}) or {}
+    action_pattern = getattr(b, "_expand_pattern", None)
+    is_expand = bool(expansions) or action_pattern is not None
+
     lines += ["", "[trigger]"]
-    if b._hotkey:
+    if is_expand:
+        lines.append('type = "expand"')
+        if action_pattern is not None:
+            lines.append(f"pattern = {_toml_str(action_pattern, 'pattern')}")
+        if expansions:
+            lines += ["", "[expansions]"]
+            for pattern, replacement in expansions.items():
+                lines.append(
+                    f"{_toml_str(pattern, 'pattern')} = {_toml_str(replacement, 'replacement')}"
+                )
+    elif b._hotkey:
         lines += ['type = "manual"', f'hotkey = "{b._hotkey}"', f'mode = "{b._hotkey_mode}"']
     else:
         lines.append('type = "loop"')
 
-    lines += ["", "[behavior]"]
-    if b._interval is not None:
-        lines.append(f"every = {b._interval}")
-    if b._jitter:
-        lines.append(f"jitter = {b._jitter}")
-    lines.append(f"repeat = {-1 if b._repeat_times == LOOP_FOREVER else b._repeat_times}")
+    if not is_expand:
+        lines += ["", "[behavior]"]
+        if b._interval is not None:
+            lines.append(f"every = {b._interval}")
+        if b._jitter:
+            lines.append(f"jitter = {b._jitter}")
+        lines.append(f"repeat = {-1 if b._repeat_times == LOOP_FOREVER else b._repeat_times}")
 
-    lines += ["", "[actions]", "sequence = ["]
-    for a in b._actions:
-        lines.append(f"    {_toml_str(_action_str(a), 'action')},")
-    lines += ["]", ""]
+    if not is_expand or action_pattern is not None:
+        lines += ["", "[actions]", "sequence = ["]
+        for a in b._actions:
+            lines.append(f"    {_toml_str(_action_str(a), 'action')},")
+        lines += ["]", ""]
+    else:
+        lines.append("")
     return "\n".join(lines)
 
 

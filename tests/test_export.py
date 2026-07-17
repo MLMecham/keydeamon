@@ -99,3 +99,24 @@ def test_install_preset_as_fork_name(tmp_path, monkeypatch):
 def test_install_unknown_preset_raises():
     with pytest.raises(ValueError, match="No built-in preset"):
         install_preset("ghost")
+
+
+def test_expand_bank_roundtrips(tmp_path, monkeypatch):
+    b = (MacroBuilder()
+         .expand("///sig", "Mitchell Mecham")
+         .expand("///gg", "good game!"))
+    text = builder_to_toml(b, name="sig", description="signature")
+    lm = _load_from_text(tmp_path, monkeypatch, "sig", text)
+    assert lm.trigger_type == "expand"
+    assert lm.expansions == {"///sig": "Mitchell Mecham", "///gg": "good game!"}
+    assert lm.expand_pattern is None
+
+
+def test_expand_with_actions_roundtrips(tmp_path, monkeypatch):
+    b = MacroBuilder().tap("f5").wait(0.2).expand("///reload")
+    text = builder_to_toml(b, name="reload")
+    lm = _load_from_text(tmp_path, monkeypatch, "reload", text)
+    assert lm.trigger_type == "expand"
+    assert lm.expand_pattern == "///reload"
+    assert lm.expand_replace is None
+    assert lm.actions == b._actions

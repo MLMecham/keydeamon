@@ -313,3 +313,89 @@ def test_stop_releases_held_keyboard_key():
     r.stop()
     with actions_mod._held_lock:
         assert actions_mod._held_keys == set()  # shift released on stop
+
+
+# ---------------------------------------------------------------------------
+# ExpandRunner matching — the bank, the rolling buffer, the erase-and-replace
+# ---------------------------------------------------------------------------
+
+import sys
+import types
+
+
+def _arm(runner):
+    """Start an ExpandRunner against mocked pynput; return (typist, kb_mock)."""
+    kbmod = sys.modules["pynput.keyboard"]
+    kbmod.Controller.reset_mock()
+    kbmod.Listener.reset_mock()
+    runner.start()
+    on_press = kbmod.Listener.call_args.kwargs["on_press"]
+    kb = kbmod.Controller.return_value
+    kb.reset_mock()
+
+    def typist(text):
+        for ch in text:
+            on_press(types.SimpleNamespace(char=ch))
+
+    def special_key():
+        on_press(types.SimpleNamespace())  # no .char -> non-character key
+
+    return typist, special_key, kb
+
+
+def test_expand_bank_matches_each_pattern():
+    from keydaemon.runner import ExpandRunner
+
+    r = ExpandRunner(expansions={"///a": "Hello", "///b": "cool dudes only"})
+    typist, _, kb = _arm(r)
+
+    typist("some text ///a")
+    kb.type.assert_called_once_with("Hello")
+
+    kb.reset_mock()
+    typist("///b")
+    kb.type.assert_called_once_with("cool dudes only")
+    r.stop()
+
+
+def test_expand_erases_the_trigger():
+    from keydaemon.runner import ExpandRunner
+
+    r = ExpandRunner(expansions={"///sig": "x"})
+    typist, _, kb = _arm(r)
+    typist("///sig")
+    # one backspace press per trigger character
+    assert kb.press.call_count == len("///sig")
+    r.stop()
+
+
+def test_special_key_resets_the_match():
+    from keydaemon.runner import ExpandRunner
+
+    r = ExpandRunner(expansions={"///a": "Hello"})
+    typist, special_key, kb = _arm(r)
+    typist("///")
+    special_key()      # e.g. an arrow key mid-pattern
+    typist("a")
+    kb.type.assert_not_called()
+    r.stop()
+
+
+def test_expand_action_pattern_fires_actions():
+    from unittest.mock import MagicMock
+    from keydaemon.runner import ExpandRunner
+
+    action = MagicMock()
+    r = ExpandRunner(pattern="///go", actions=[action])
+    typist, _, kb = _arm(r)
+    typist("///go")
+    action.execute.assert_called_once()
+    kb.type.assert_not_called()  # actions, not replacement text
+    r.stop()
+
+
+def test_expand_requires_something_to_do():
+    from keydaemon.runner import ExpandRunner
+
+    with pytest.raises(ValueError, match="requires expansions"):
+        ExpandRunner(pattern="///x")  # pattern but no replace and no actions

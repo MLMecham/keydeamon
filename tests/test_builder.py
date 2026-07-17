@@ -169,3 +169,68 @@ def test_run_rejects_kill_combo_synthesis():
     b = MacroBuilder().press("ctrl").press("shift").press("alt").tap("f12")
     with pytest.raises(KillKeyError):
         b.run()
+
+
+def test_expand_banks_replacements():
+    b = MacroBuilder().expand("///a", "Hello").expand("///b", "cool dudes only")
+    assert b._expansions == {"///a": "Hello", "///b": "cool dudes only"}
+    assert b._expand_pattern is None  # no action-mode pattern
+
+
+def test_expand_allows_one_action_pattern():
+    import pytest
+    b = MacroBuilder().tap("f5").expand("///go")
+    assert b._expand_pattern == "///go"
+    with pytest.raises(ValueError, match="Only one action-firing"):
+        b.expand("///again")
+
+
+def test_expand_rejects_self_triggering_replacement():
+    import pytest
+    with pytest.raises(ValueError, match="re-trigger"):
+        MacroBuilder().expand("///a", "see ///a above")
+
+
+def test_run_builds_expand_runner():
+    from keydaemon.runner import ExpandRunner
+    r = MacroBuilder().expand("///sig", "hello").run()
+    try:
+        assert isinstance(r, ExpandRunner)
+    finally:
+        r.stop()
+
+
+def test_expand_plus_hotkey_rejected():
+    import pytest
+    b = MacroBuilder().expand("///sig", "hello").hotkey("f6")
+    with pytest.raises(ValueError, match="both an expand pattern and a hotkey"):
+        b.run()
+
+
+def test_save_writes_and_overwrites(tmp_path, monkeypatch):
+    from keydaemon import _paths
+    monkeypatch.setattr(_paths, "macro_path", lambda n: tmp_path / f"{n}.toml")
+
+    p = MacroBuilder().every(1).tap("space").loop().save("spacer", description="taps space")
+    assert p.read_text(encoding="utf-8").count("tap:space") == 1
+
+    # Python is the source of truth: saving again just overwrites.
+    MacroBuilder().every(2).tap("w").loop().save("spacer")
+    text = p.read_text(encoding="utf-8")
+    assert "tap:w" in text
+    assert "tap:space" not in text
+
+
+def test_saved_macro_loads_back_identically(tmp_path, monkeypatch):
+    from keydaemon import _paths, loader
+    monkeypatch.setattr(_paths, "macro_path", lambda n: tmp_path / f"{n}.toml")
+
+    b = MacroBuilder().every(0.25).jitter(0.06).click("left").loop().hotkey("f6").exit_key("f8")
+    path = b.save("clicker")
+    monkeypatch.setattr(loader, "macro_path", lambda n: path)
+
+    lm = loader.load_macro("clicker")
+    assert lm.actions == b._actions
+    assert lm.hotkey == "f6"
+    assert lm.exit_key == "f8"
+    assert lm.interval == 0.25

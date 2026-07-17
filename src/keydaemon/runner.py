@@ -296,28 +296,57 @@ class HotkeyRunner(Runner):
 
 
 class ExpandRunner(Runner):
-    """Listens for a text pattern and replaces it or fires a sub-sequence."""
+    """Listens for typed text patterns — a *bank* of them — with one listener.
+
+    Two kinds of entry share the single keyboard listener and match buffer:
+
+    - expansions: {pattern: replacement} — typing a pattern erases it and
+      types its replacement. Many can be armed at once ("///a", "///b", ...).
+    - one optional action pattern — typing it erases it and fires this
+      macro's action sequence instead of text.
+
+    Matching uses a rolling buffer capped at the longest pattern: each typed
+    character appends, the tail is kept, and a fire happens the moment the
+    buffer ends with any armed pattern. Any non-character key resets the match.
+    """
 
     def __init__(
         self,
-        pattern: str,
+        pattern: str | None = None,
         replace: str | None = None,
         actions: list[Action] | None = None,
+        expansions: dict[str, str] | None = None,
     ) -> None:
-        if replace is None and not actions:
-            raise ValueError("ExpandRunner requires either replace or actions")
+        expansions = dict(expansions or {})
+        if pattern and replace is not None:
+            # single pattern+replace is sugar for a one-entry bank
+            expansions[pattern] = replace
+            pattern = None
+        if not expansions and not (pattern and actions):
+            raise ValueError(
+                "ExpandRunner requires expansions (pattern -> replacement) "
+                "and/or a pattern with actions"
+            )
         super().__init__()
-        self._pattern = pattern
-        self._replace = replace
+        self._expansions = expansions
+        self._action_pattern = pattern
         self._actions = actions or []
         self._buffer: list[str] = []
         self._listener = None
         self._stop_event = threading.Event()
 
+    def _patterns(self) -> list[str]:
+        pats = list(self._expansions)
+        if self._action_pattern:
+            pats.append(self._action_pattern)
+        return pats
+
     def start(self) -> None:
         from pynput.keyboard import Controller, Key, Listener
 
         kb = Controller()
+        patterns = self._patterns()
+        max_len = max(len(p) for p in patterns)
 
         def on_press(key: object) -> None:
             if self._stop_event.is_set():
@@ -327,18 +356,25 @@ class ExpandRunner(Runner):
             except AttributeError:
                 self._buffer.clear()
                 return
+            if char is None:
+                self._buffer.clear()
+                return
 
             self._buffer.append(char)
+            del self._buffer[:-max_len]  # rolling tail — old chars can't match
             joined = "".join(self._buffer)
 
-            if self._pattern in joined:
+            for pattern in patterns:
+                if not joined.endswith(pattern):
+                    continue
                 self._buffer.clear()
                 # erase the trigger
-                for _ in self._pattern:
+                for _ in pattern:
                     kb.press(Key.backspace)
                     kb.release(Key.backspace)
-                if self._replace is not None:
-                    kb.type(self._replace)
+                replacement = self._expansions.get(pattern)
+                if replacement is not None:
+                    kb.type(replacement)
                 else:
                     ctrl = _make_controller()
                     from keydaemon.actions import _SelfStop
@@ -353,8 +389,7 @@ class ExpandRunner(Runner):
                             # listener from its own callback.
                             self.stop()
                             return
-            elif not self._pattern.startswith(joined[-len(self._pattern):]):
-                self._buffer.clear()
+                return
 
         self._listener = Listener(on_press=on_press)
         self._listener.start()  # type: ignore[union-attr]
@@ -366,6 +401,10 @@ class ExpandRunner(Runner):
                 self._listener.stop()  # type: ignore[union-attr]
             except Exception:
                 pass
+
+    def join(self, timeout: float | None = None) -> None:
+        if self._listener is not None:
+            self._listener.join(timeout)  # type: ignore[union-attr]
 
     @property
     def is_running(self) -> bool:
@@ -381,9 +420,10 @@ def make_runner(lm: object) -> DaemonRunner | ExpandRunner | HotkeyRunner:
     """
     if lm.trigger_type == "expand":  # type: ignore[attr-defined]
         return ExpandRunner(
-            pattern=lm.expand_pattern or "",  # type: ignore[attr-defined]
+            pattern=lm.expand_pattern,  # type: ignore[attr-defined]
             replace=lm.expand_replace,  # type: ignore[attr-defined]
             actions=lm.actions if not lm.expand_replace else None,  # type: ignore[attr-defined]
+            expansions=getattr(lm, "expansions", None),
         )
     if getattr(lm, "hotkey", None):
         return HotkeyRunner(

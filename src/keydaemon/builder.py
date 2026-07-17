@@ -34,6 +34,8 @@ class MacroBuilder:
         self._exit_key: str | None = None
         self._hotkey: str | None = None
         self._hotkey_mode: str = "toggle"
+        self._expansions: dict[str, str] = {}
+        self._expand_pattern: str | None = None  # action-mode pattern (no replace)
 
     # ------------------------------------------------------------------
     # Scheduling
@@ -80,6 +82,42 @@ class MacroBuilder:
         """
         self._hotkey = key
         self._hotkey_mode = mode
+        return self
+
+    def expand(self, pattern: str, replace: str | None = None) -> MacroBuilder:
+        """
+        Trigger on typed text: whenever `pattern` is typed anywhere, the trigger
+        text is erased and `replace` is typed in its place.
+
+        Call repeatedly to build a *bank* — every entry shares one keyboard
+        listener::
+
+            keydaemon.macro().expand("///a", "Hello").expand("///b", "cool dudes only")
+
+        With replace=None, typing the pattern runs this macro's action sequence
+        instead of typing text (at most one such action pattern per macro).
+
+        Patterns must be typed without modifier keys mid-pattern (lowercase);
+        any special key resets the match buffer.
+        """
+        if replace is None:
+            if self._expand_pattern is not None:
+                raise ValueError(
+                    "Only one action-firing expand pattern per macro — text "
+                    "replacements (replace=...) can be banked without limit"
+                )
+            self._expand_pattern = pattern
+        else:
+            self._expansions[pattern] = replace
+        # No pattern may appear inside any replacement (its own or another's) —
+        # typing that replacement would re-trigger an expansion forever.
+        for pat in [*self._expansions, *([self._expand_pattern] if self._expand_pattern else [])]:
+            for rep in self._expansions.values():
+                if pat in rep:
+                    raise ValueError(
+                        f"replacement text {rep!r} contains the trigger pattern "
+                        f"{pat!r} — typing it would re-trigger an expansion forever"
+                    )
         return self
 
     # ------------------------------------------------------------------
@@ -176,15 +214,23 @@ class MacroBuilder:
     # Execution
     # ------------------------------------------------------------------
 
-    def run(self) -> DaemonRunner | HotkeyRunner:
+    def run(self) -> DaemonRunner | HotkeyRunner | ExpandRunner:
         from keydaemon.guard import ensure_kill_key_unreachable
-        from keydaemon.runner import DaemonRunner, HotkeyRunner
+        from keydaemon.runner import DaemonRunner, ExpandRunner, HotkeyRunner
         from keydaemon.profile import Profile
 
         ensure_kill_key_unreachable(
             self._actions, hotkey=self._hotkey, exit_key=self._exit_key
         )
-        if self._hotkey is not None:
+        if self._expansions or self._expand_pattern is not None:
+            if self._hotkey is not None:
+                raise ValueError("A macro can't have both an expand pattern and a hotkey")
+            runner = ExpandRunner(
+                pattern=self._expand_pattern,
+                actions=list(self._actions) if self._expand_pattern else None,
+                expansions=self._expansions,
+            )
+        elif self._hotkey is not None:
             runner = HotkeyRunner(
                 hotkey=self._hotkey,
                 actions=list(self._actions),
@@ -204,3 +250,28 @@ class MacroBuilder:
         p.add_runner(runner)
         p.start()
         return runner
+
+    def save(self, name: str, description: str = ""):
+        """
+        Write this macro to the keydaemon macros directory as `<name>.toml`,
+        overwriting any existing file of that name — the Python script is the
+        source of truth, so running it stamps its current behavior over the TOML.
+
+        The saved file is a first-class CLI macro: run it with
+        ``keydaemon run <name>``, see it in ``keydaemon list``, detach it,
+        stop it by name.
+
+        Raises ValueError if the macro uses Python-only features that TOML
+        can't express (the file is left untouched in that case).
+        """
+        from keydaemon._paths import macro_path
+        from keydaemon.export import builder_to_toml
+        from keydaemon.guard import ensure_kill_key_unreachable
+
+        ensure_kill_key_unreachable(
+            self._actions, hotkey=self._hotkey, exit_key=self._exit_key, name=name
+        )
+        text = builder_to_toml(self, name=name, description=description)
+        path = macro_path(name)
+        path.write_text(text, encoding="utf-8")
+        return path

@@ -1,6 +1,6 @@
 site_name: keydaemon
 site_description: A programmable keyboard/mouse automation daemon — clean Python API + CLI, with a kill key that always works.
-site_url: https://mlmecham.github.io/keydaemon
+site_url: https://mlmecham.github.io/keydeamon
 repo_url: https://github.com/MLMecham/keydeamon
 repo_name: MLMecham/keydeamon
 

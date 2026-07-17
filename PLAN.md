@@ -111,20 +111,36 @@ sequence = [
 ### Text Expansion Listener
 ```toml
 [meta]
-name = "Autofill A"
+name = "Snippets"
 tags = ["text", "productivity"]
 enabled = true
 start_on_boot = false
 
 [trigger]
 type = "expand"
-pattern = "///a"
 
-[behavior]
-replace = "cheeseburger"
-# OR instead of replace, run a sub-macro:
-# do = "open_inventory"
+# A bank: many snippets share ONE keyboard listener and match buffer.
+[expansions]
+"///a"   = "Hello"
+"///b"   = "cool dudes only"
+"///sig" = "Mitchell Mecham | mechamit000@gmail.com"
 ```
+
+Single-pattern sugar (equivalent to a one-entry bank), and the action-firing
+variant — `pattern` with an `[actions]` sequence instead of replacement text:
+
+```toml
+[trigger]
+type = "expand"
+pattern = "///reload"
+
+[actions]
+sequence = ["tap:f5"]
+```
+
+No pattern may appear inside any replacement (it would re-trigger forever) —
+rejected at load time. Python: chain `.expand(pattern, replace)` calls to
+build the bank; `replace=None` marks the one action-firing pattern.
 
 ### Manual Macro (reusable sub-sequence)
 ```toml
@@ -430,6 +446,14 @@ is refused), logs to `keydaemon.log`. Liveness probing on Windows uses ctypes
 
 ## Future: v2 Misc
 
+- Rich template files: paste-in sample scripts (or a generator command) with
+  useful constants at the top for one-spot editing — an expand template with a
+  `PREFIX = "///"` constant, a toggle template shaped like examples/autoclicker.py,
+  and condition templates once `if_color` lands.
+- `.do("macro_name")` on MacroBuilder — Python equivalent of the TOML `do:` action
+  (inline a saved macro's sequence; loader `_load_do` already implements the
+  resolution). `.save()` should ideally keep the `do:` reference instead of
+  flattening, so saved macros stay composable.
 - `hold` hotkey mode (act while key held — needs key-release events; GlobalHotKeys only gives activate)
 - Graceful shutdown for detached processes: child polls a stop-sentinel file and
   calls `stop_all()` (releasing held inputs); `keydaemon stop` escalates to
