@@ -96,7 +96,7 @@ run = [
 @click.group()
 @click.version_option(package_name="keydaemon")
 def main() -> None:
-    """keydaemon — background daemon for keyboard/mouse automation."""
+    """keydaemon - background daemon for keyboard/mouse automation."""
 
 
 @main.command()
