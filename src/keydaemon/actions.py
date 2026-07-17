@@ -38,12 +38,21 @@ def _resolve_button(name: str, Button: object) -> object:
     return resolved
 
 
-# Mouse buttons currently held down (a press: with no matching release: yet).
-# A stop releases ONLY these — releasing a button that was never pressed injects a
-# spurious "button up" event, and a stray right-button-up makes apps like the
-# Ruffle Flash player open their right-click context menu. A plain clicker holds
+# Inputs currently held down (a press: with no matching release: yet).
+# A stop releases ONLY these — releasing something that was never pressed injects
+# a spurious "up" event, and a stray right-button-up makes apps like the Ruffle
+# Flash player open their right-click context menu. A plain clicker holds
 # nothing, so its stop must release nothing.
+#
+# Both sets are process-global, shared by every runner: any runner's stop sweeps
+# everything currently held. On a race (one thread pressing while another
+# releases-all) the releaser wins — the sets are snapshotted and cleared under
+# the lock; a press that lands after the snapshot stays tracked and is released
+# by the next stop. Taps are NOT tracked: a tap always completes its own
+# press→release on its thread, so releasing it from the stop path would inject
+# exactly the kind of spurious key-up this mechanism exists to avoid.
 _held_mouse_buttons: set[str] = set()
+_held_keys: set[str] = set()
 _held_lock = threading.Lock()
 
 
@@ -76,6 +85,8 @@ class PressAction:
                 _held_mouse_buttons.add(self.key)
         else:
             ctrl.keyboard.press(_resolve_key(self.key, ctrl.Key))
+            with _held_lock:
+                _held_keys.add(self.key)
 
 
 @dataclass(frozen=True)
@@ -90,6 +101,8 @@ class ReleaseAction:
                 _held_mouse_buttons.discard(self.key)
         else:
             ctrl.keyboard.release(_resolve_key(self.key, ctrl.Key))
+            with _held_lock:
+                _held_keys.discard(self.key)
 
 
 @dataclass(frozen=True)
@@ -220,19 +233,35 @@ class WaitForColorAction:
 
 @dataclass(frozen=True)
 class SelfStopAction:
-    """Signals the owning runner to stop via its UUID token."""
-    token: str
+    """Stop the macro this action runs in (and any children of its runner)."""
 
     def execute(self, ctrl: InputController, stop_requested: Callable[[], bool] = lambda: False) -> None:
-        # The scheduler checks stop_requested() after each action.
-        # SelfStopAction works by registering its token with the runner's stop event
-        # before the sequence runs. The runner treats a raised _SelfStop as clean exit.
-        raise _SelfStop(self.token)
+        # Control flow, not a signal: the scheduler catches _SelfStop and exits
+        # its loop, then the owning runner's thread wrapper calls runner.stop()
+        # — cascading to children and releasing held inputs.
+        raise _SelfStop()
+
+
+@dataclass(frozen=True)
+class KillAllAction:
+    """Stop every macro in the process — same effect as the emergency kill key.
+
+    This is the sanctioned way for a macro to invoke the global kill (the
+    hardware combo itself is reserved and unbindable; see keydaemon.guard).
+    Exists so conditional macros can bail out of everything, e.g.
+    "if the screen goes red, kill all automation".
+    """
+
+    def execute(self, ctrl: InputController, stop_requested: Callable[[], bool] = lambda: False) -> None:
+        from keydaemon.profile import stop_all  # runtime import avoids a cycle
+        stop_all()
+        # stop_all() already latched our own stop event, but raising makes the
+        # exit immediate and unconditional rather than waiting for the next check.
+        raise _SelfStop()
 
 
 class _SelfStop(Exception):
-    def __init__(self, token: str) -> None:
-        self.token = token
+    """Clean-exit control flow raised by SelfStopAction / KillAllAction."""
 
 
 # ---------------------------------------------------------------------------
@@ -251,4 +280,5 @@ Action = (
     | ScrollAction
     | WaitForColorAction
     | SelfStopAction
+    | KillAllAction
 )

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import sys
-import uuid
 from pathlib import Path
 from typing import Any
 
@@ -11,10 +10,11 @@ else:
     import tomli as tomllib  # type: ignore[no-redef]
 
 from keydaemon._paths import macro_path, macros_dir
-from keydaemon._types import GLOBAL_KILL_KEY, LOOP_FOREVER
+from keydaemon._types import LOOP_FOREVER
 from keydaemon.actions import (
     Action,
     ClickAction,
+    KillAllAction,
     MoveByAction,
     MoveToAction,
     PressAction,
@@ -26,6 +26,7 @@ from keydaemon.actions import (
     WaitAction,
     WaitForColorAction,
 )
+from keydaemon.guard import ensure_kill_key_unreachable
 
 
 # ---------------------------------------------------------------------------
@@ -85,8 +86,10 @@ def _parse_action(raw: str, source_path: Path, seen: set[str]) -> list[Action]:
 
     if verb == "stop":
         if parts[1] == "self":
-            return [SelfStopAction(token=str(uuid.uuid4()))]
-        raise ValueError(f"Unknown stop target: {parts[1]!r}")
+            return [SelfStopAction()]
+        if parts[1] == "all":
+            return [KillAllAction()]
+        raise ValueError(f"Unknown stop target: {parts[1]!r} (use 'self' or 'all')")
 
     if verb == "do":
         return _load_do(parts[1], source_path, seen)
@@ -120,18 +123,6 @@ def _read_toml(path: Path) -> dict[str, Any]:
         raise FileNotFoundError(f"Macro file not found: {path}")
     with open(path, "rb") as f:
         return tomllib.load(f)
-
-
-def _validate_no_global_kill(actions: list[Action], name: str) -> None:
-    """Reject macros that try to use the global kill key."""
-    global_key = GLOBAL_KILL_KEY.lower().replace("<", "").replace(">", "").replace("+", "")
-    for action in actions:
-        if isinstance(action, (TapAction, PressAction, ReleaseAction)):
-            key = action.key.lower()
-            if key in ("f12",) and "ctrl" in global_key:
-                pass  # f12 alone is fine; the full combo check would need more context
-    # For now we flag any sequence that contains the exact global kill key string
-    # A more complete check would parse key combos — deferred to v2
 
 
 # ---------------------------------------------------------------------------
@@ -181,12 +172,12 @@ def load_macro(name: str) -> LoadedMacro:
     exit_key = meta.get("exit_key")
 
     if trigger_type == "expand":
+        expand_actions = _parse_sequence(actions_data.get("sequence", []), path, seen)
+        ensure_kill_key_unreachable(expand_actions, exit_key=exit_key, name=name)
         return LoadedMacro(
             name=name,
             trigger_type="expand",
-            actions=_parse_sequence(
-                actions_data.get("sequence", []), path, seen
-            ),
+            actions=expand_actions,
             interval=None,
             repeat_times=1,
             jitter=0.0,
@@ -199,6 +190,12 @@ def load_macro(name: str) -> LoadedMacro:
     repeat_times = LOOP_FOREVER if repeat_raw == -1 else int(repeat_raw)
 
     actions = _parse_sequence(actions_data.get("sequence", []), path, seen)
+    ensure_kill_key_unreachable(
+        actions,
+        hotkey=trigger.get("hotkey"),
+        exit_key=exit_key,
+        name=name,
+    )
 
     return LoadedMacro(
         name=name,

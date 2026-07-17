@@ -147,3 +147,25 @@ def test_hotkey_is_chainable():
     assert b._hotkey == "f6"
     assert b._exit_key == "f8"
     assert b._repeat_times == LOOP_FOREVER
+
+
+def test_kill_all():
+    from keydaemon.actions import KillAllAction
+    b = MacroBuilder().kill_all()
+    assert isinstance(b._actions[0], KillAllAction)
+
+
+def test_run_rejects_kill_combo_hotkey():
+    import pytest
+    from keydaemon.guard import KillKeyError
+    b = MacroBuilder().click("left").hotkey("<ctrl>+<shift>+<alt>+<f12>")
+    with pytest.raises(KillKeyError):
+        b.run()
+
+
+def test_run_rejects_kill_combo_synthesis():
+    import pytest
+    from keydaemon.guard import KillKeyError
+    b = MacroBuilder().press("ctrl").press("shift").press("alt").tap("f12")
+    with pytest.raises(KillKeyError):
+        b.run()

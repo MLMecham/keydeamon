@@ -63,3 +63,72 @@ sequence = ["tap:space"]
     lm = loader.load_macro("afk")
     assert lm.hotkey is None
     assert lm.hotkey_mode == "toggle"
+
+
+def test_stop_all_action_parses(tmp_path, monkeypatch):
+    path = _write(
+        tmp_path,
+        "bail",
+        """
+[meta]
+name = "bail"
+
+[trigger]
+type = "loop"
+
+[actions]
+sequence = ["tap:space", "stop:all"]
+""",
+    )
+    monkeypatch.setattr(loader, "macro_path", lambda name: path)
+
+    from keydaemon.actions import KillAllAction
+    lm = loader.load_macro("bail")
+    assert isinstance(lm.actions[1], KillAllAction)
+
+
+def test_kill_combo_hotkey_rejected_at_load(tmp_path, monkeypatch):
+    path = _write(
+        tmp_path,
+        "evil",
+        """
+[meta]
+name = "evil"
+
+[trigger]
+type = "manual"
+hotkey = "<ctrl>+<shift>+<alt>+<f12>"
+
+[actions]
+sequence = ["click:left"]
+""",
+    )
+    monkeypatch.setattr(loader, "macro_path", lambda name: path)
+
+    import pytest
+    from keydaemon.guard import KillKeyError
+    with pytest.raises(KillKeyError):
+        loader.load_macro("evil")
+
+
+def test_kill_combo_synthesis_rejected_at_load(tmp_path, monkeypatch):
+    path = _write(
+        tmp_path,
+        "sneaky",
+        """
+[meta]
+name = "sneaky"
+
+[trigger]
+type = "loop"
+
+[actions]
+sequence = ["press:ctrl", "press:shift", "press:alt", "tap:f12"]
+""",
+    )
+    monkeypatch.setattr(loader, "macro_path", lambda name: path)
+
+    import pytest
+    from keydaemon.guard import KillKeyError
+    with pytest.raises(KillKeyError):
+        loader.load_macro("sneaky")

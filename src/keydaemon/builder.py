@@ -6,6 +6,7 @@ from keydaemon._types import LOOP_FOREVER
 from keydaemon.actions import (
     Action,
     ClickAction,
+    KillAllAction,
     MoveByAction,
     MoveToAction,
     PressAction,
@@ -160,8 +161,15 @@ class MacroBuilder:
     # ------------------------------------------------------------------
 
     def stop_self(self) -> MacroBuilder:
-        import uuid
-        self._actions.append(SelfStopAction(token=str(uuid.uuid4())))
+        """Stop this macro (and its runner's children) when reached."""
+        self._actions.append(SelfStopAction())
+        return self
+
+    def kill_all(self) -> MacroBuilder:
+        """Stop EVERY macro in the process when reached — the programmatic
+        equivalent of the emergency kill key. Pair with conditions (e.g. a
+        wait_for_color) to bail out of all automation when something looks wrong."""
+        self._actions.append(KillAllAction())
         return self
 
     # ------------------------------------------------------------------
@@ -169,9 +177,13 @@ class MacroBuilder:
     # ------------------------------------------------------------------
 
     def run(self) -> DaemonRunner | HotkeyRunner:
+        from keydaemon.guard import ensure_kill_key_unreachable
         from keydaemon.runner import DaemonRunner, HotkeyRunner
         from keydaemon.profile import Profile
 
+        ensure_kill_key_unreachable(
+            self._actions, hotkey=self._hotkey, exit_key=self._exit_key
+        )
         if self._hotkey is not None:
             runner = HotkeyRunner(
                 hotkey=self._hotkey,

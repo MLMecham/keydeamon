@@ -97,30 +97,44 @@ def _make_controller() -> object:
 
 
 def _release_all_inputs() -> None:
-    """Release only the mouse buttons currently held, to prevent stuck inputs
-    after a stop. Buttons that were never pressed are left untouched — injecting a
-    spurious 'button up' (a right-button-up especially) makes apps like the Ruffle
-    Flash player open a context menu. A plain clicker holds nothing, so this is a
-    no-op for it and no stray events are sent."""
-    from keydaemon.actions import _held_lock, _held_mouse_buttons
+    """Release only the mouse buttons and keyboard keys currently held, to
+    prevent stuck inputs after a stop. Inputs that were never pressed are left
+    untouched — injecting a spurious 'up' (a right-button-up especially) makes
+    apps like the Ruffle Flash player open a context menu. A plain clicker holds
+    nothing, so this is a no-op for it and no stray events are sent."""
+    from keydaemon.actions import _held_keys, _held_lock, _held_mouse_buttons
 
     with _held_lock:
-        held = list(_held_mouse_buttons)
+        held_buttons = list(_held_mouse_buttons)
+        held_keys = list(_held_keys)
         _held_mouse_buttons.clear()
-    if not held:
-        return
-    try:
-        from pynput.mouse import Controller as MC, Button
-        mc = MC()
-        for name in held:
-            btn = getattr(Button, name, None)
-            if btn is not None:
+        _held_keys.clear()
+    if held_buttons:
+        try:
+            from pynput.mouse import Controller as MC, Button
+            mc = MC()
+            for name in held_buttons:
+                btn = getattr(Button, name, None)
+                if btn is not None:
+                    try:
+                        mc.release(btn)
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+    if held_keys:
+        try:
+            from pynput.keyboard import Controller as KC, Key
+            kc = KC()
+            for name in held_keys:
+                # Same resolution as actions._resolve_key: named Key or raw char.
+                key = getattr(Key, name, None)
                 try:
-                    mc.release(btn)
+                    kc.release(key if key is not None else name)
                 except Exception:
                     pass
-    except Exception:
-        pass
+        except Exception:
+            pass
 
 
 class DaemonRunner(Runner):
@@ -142,16 +156,26 @@ class DaemonRunner(Runner):
 
     def start(self) -> None:
         ctrl = _make_controller()
+
+        def _run() -> None:
+            try:
+                run_scheduled(
+                    self._actions,
+                    self._interval,
+                    self._repeat_times,
+                    self._jitter,
+                    ctrl,
+                    self._stop_event.is_set,
+                )
+            finally:
+                # However the loop ended (finite run done, stop:self/stop:all,
+                # crash), tear down properly: cascade to children and release
+                # held inputs. stop() is idempotent and join-free, so calling
+                # it from our own thread is safe.
+                self.stop()
+
         self._thread = threading.Thread(
-            target=run_scheduled,
-            args=(
-                self._actions,
-                self._interval,
-                self._repeat_times,
-                self._jitter,
-                ctrl,
-                self._stop_event.is_set,
-            ),
+            target=_run,
             daemon=True,
             name=f"keydaemon-{self.token[:8]}",
         )
@@ -317,10 +341,18 @@ class ExpandRunner(Runner):
                     kb.type(self._replace)
                 else:
                     ctrl = _make_controller()
+                    from keydaemon.actions import _SelfStop
                     for action in self._actions:
                         if self._stop_event.is_set():
                             break
-                        action.execute(ctrl, self._stop_event.is_set)
+                        try:
+                            action.execute(ctrl, self._stop_event.is_set)
+                        except _SelfStop:
+                            # stop:self / stop:all inside an expansion sequence
+                            # stops this runner; pynput allows stopping the
+                            # listener from its own callback.
+                            self.stop()
+                            return
             elif not self._pattern.startswith(joined[-len(self._pattern):]):
                 self._buffer.clear()
 

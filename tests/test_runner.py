@@ -230,3 +230,86 @@ def test_make_runner_builds_expand_runner():
 
     r = make_runner(_FakeLoaded(trigger_type="expand", expand_pattern="///x", expand_replace="y"))
     assert isinstance(r, ExpandRunner)
+
+
+# ---------------------------------------------------------------------------
+# stop:self / stop:all tear the runner down properly (not just the loop)
+# ---------------------------------------------------------------------------
+
+def test_self_stop_action_stops_runner_and_releases_inputs():
+    from keydaemon import actions as actions_mod
+    from keydaemon.actions import PressAction, SelfStopAction
+    from keydaemon.runner import DaemonRunner
+
+    r = DaemonRunner(
+        actions=[PressAction(key="left"), SelfStopAction()],
+        interval=0.01,
+        repeat_times=-1,  # would loop forever without the stop:self
+    )
+    r.start()
+    r.join(timeout=2)
+    assert not r.is_running
+    assert r._stopped  # full runner stop, not just a dead thread
+    with actions_mod._held_lock:
+        assert actions_mod._held_mouse_buttons == set()  # held button was released
+
+
+def test_finite_run_auto_stops_runner():
+    from keydaemon.actions import WaitAction
+    from keydaemon.runner import DaemonRunner
+
+    r = DaemonRunner(actions=[WaitAction(seconds=0)], interval=None, repeat_times=1)
+    r.start()
+    r.join(timeout=2)
+    assert r._stopped  # natural completion also runs the teardown path
+
+
+def test_release_all_inputs_injects_nothing_when_no_key_held():
+    from keydaemon import runner
+    from keydaemon.actions import _held_keys, _held_lock
+
+    with _held_lock:
+        _held_keys.clear()
+    with patch("pynput.keyboard.Controller") as MockController:
+        runner._release_all_inputs()
+        MockController.assert_not_called()  # no controller built => no events sent
+
+
+def test_release_all_inputs_releases_only_held_key():
+    from keydaemon import runner
+    from keydaemon.actions import _held_keys, _held_lock
+
+    with _held_lock:
+        _held_keys.clear()
+        _held_keys.add("shift")
+    with patch("pynput.keyboard.Controller") as MockController:
+        runner._release_all_inputs()
+        MockController.return_value.release.assert_called_once()
+    with _held_lock:
+        assert _held_keys == set()  # released and cleared
+
+
+def test_stop_releases_held_keyboard_key():
+    # The stuck-shift bug: press("shift") then stop must release shift.
+    from keydaemon import actions as actions_mod
+    from keydaemon.actions import PressAction, WaitAction
+    from keydaemon.runner import DaemonRunner
+
+    with actions_mod._held_lock:
+        actions_mod._held_keys.clear()
+    r = DaemonRunner(
+        actions=[PressAction(key="shift"), WaitAction(seconds=5)],
+        interval=None,
+        repeat_times=1,
+    )
+    r.start()
+    import time
+    deadline = time.monotonic() + 2
+    while time.monotonic() < deadline:
+        with actions_mod._held_lock:
+            if "shift" in actions_mod._held_keys:
+                break
+        time.sleep(0.01)
+    r.stop()
+    with actions_mod._held_lock:
+        assert actions_mod._held_keys == set()  # shift released on stop

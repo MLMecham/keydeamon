@@ -124,7 +124,16 @@ def test_move_by_calls_move():
 def test_self_stop_raises():
     ctrl = _ctrl()
     with pytest.raises(_SelfStop):
-        SelfStopAction(token="abc").execute(ctrl)
+        SelfStopAction().execute(ctrl)
+
+
+def test_kill_all_calls_stop_all_then_raises():
+    ctrl = _ctrl()
+    from keydaemon.actions import KillAllAction
+    with patch("keydaemon.profile.stop_all") as mock_stop_all:
+        with pytest.raises(_SelfStop):
+            KillAllAction().execute(ctrl)
+    mock_stop_all.assert_called_once_with()
 
 
 def test_wait_for_color_returns_when_match():
@@ -139,3 +148,27 @@ def test_wait_for_color_times_out():
         with patch("keydaemon.actions.time.sleep"):
             with pytest.raises(TimeoutError):
                 WaitForColorAction(x=0, y=0, hex_color="#FF0000", timeout=1.0).execute(ctrl)
+
+
+def test_press_keyboard_marks_held_and_release_clears():
+    from keydaemon.actions import _held_keys, _held_lock
+
+    with _held_lock:
+        _held_keys.clear()
+    ctrl = _ctrl()
+    PressAction(key="shift").execute(ctrl)
+    assert "shift" in _held_keys
+    ReleaseAction(key="shift").execute(ctrl)
+    assert "shift" not in _held_keys
+
+
+def test_tap_does_not_mark_key_held():
+    # A tap completes its own press->release on its thread, so tracking it
+    # would make a concurrent stop inject a spurious extra key-up.
+    from keydaemon.actions import _held_keys, _held_lock
+
+    with _held_lock:
+        _held_keys.clear()
+    ctrl = _ctrl()
+    TapAction(key="space", duration=0).execute(ctrl)
+    assert "space" not in _held_keys
