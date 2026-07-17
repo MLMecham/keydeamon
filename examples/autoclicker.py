@@ -21,10 +21,10 @@ import keydaemon
 # Configuration
 # ---------------------------------------------------------------------------
 
-CPS = 10  # clicks per second
+CPS = 4  # clicks per second
 BUTTON = "left"  # "left", "right", or "middle"
 CLICKS = 1  # clicks per fire — set 2 for double-clicks
-JITTER = 0.02  # +/- seconds of random timing wobble (0 = perfectly steady)
+JITTER = 0.06  # +/- seconds of random timing wobble (0 = perfectly steady)
 TOGGLE_KEY = "f6"  # press to start clicking, press again to stop
 EXIT_KEY = "f8"  # press to quit the program
 

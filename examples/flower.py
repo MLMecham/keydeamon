@@ -21,10 +21,10 @@ from pynput.mouse import Controller as _Mouse
 # Configuration
 # ---------------------------------------------------------------------------
 
-RADIUS = 200    # petal size in pixels — how far each petal reaches from center
-K = 3           # number of petals × 2 (k=3 → 6 petals, k=2 → 4, k=4 → 8, k=5 → 10)
-STEPS = K * 200 # smoothness — scales automatically with petal count
-SPEED = 3       # 1 = slowest, 5 = fastest
+RADIUS = 200  # petal size in pixels — how far each petal reaches from center
+K = 3  # number of petals × 2 (k=3 → 6 petals, k=2 → 4, k=4 → 8, k=5 → 10)
+STEPS = K * 200  # smoothness — scales automatically with petal count
+SPEED = 3  # 1 = slowest, 5 = fastest
 STEP_DELAY = [0.02, 0.01, 0.005, 0.002, 0.001][SPEED - 1]
 
 # ---------------------------------------------------------------------------
@@ -33,7 +33,7 @@ STEP_DELAY = [0.02, 0.01, 0.005, 0.002, 0.001][SPEED - 1]
 
 cx, cy = int(_Mouse().position[0]), int(_Mouse().position[1])
 
-# First point of the rose curve at theta=0: (cx + RADIUS, cy)
+# First point of the rose curve at theta=p0: (cx + RADIUS, cy)
 start_x = int(cx + RADIUS)
 start_y = cy
 

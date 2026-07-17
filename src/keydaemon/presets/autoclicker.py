@@ -24,7 +24,7 @@ EXIT_KEY = "esc"  # press to quit
 def build() -> MacroBuilder:
     return (
         MacroBuilder()
-        .times_per_second(20)
+        .times_per_second(10)
         .jitter(0.02)
         .click("left")
         .loop()
