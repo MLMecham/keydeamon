@@ -122,15 +122,25 @@ def run(name: str, detach: bool) -> None:
     if is_profile(name):
         macro_names = load_profile(name)
         p = Profile(name=name)
-        for mname in macro_names:
-            p.add_runner(make_runner(load_macro(mname)))
+        loaded = [load_macro(mname) for mname in macro_names]
+        for lm in loaded:
+            p.add_runner(make_runner(lm))
         p.start()
         click.echo(f"Running profile '{name}' with {len(macro_names)} macro(s). Ctrl+C to stop.")
+        for lm in loaded:
+            controls = _controls_line(lm)
+            if controls:
+                click.echo(f"  {lm.name}: {controls}")
     else:
         lm = load_macro(name)
         p = Profile(name=name, exit_key=lm.exit_key)
         p.add_runner(make_runner(lm))
         p.start()
+        if lm.description:
+            click.echo(lm.description)
+        controls = _controls_line(lm)
+        if controls:
+            click.echo(controls)
         click.echo(f"Running '{name}'. Ctrl+C to stop.")
 
     try:
@@ -236,6 +246,29 @@ def disable(name: str) -> None:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _fmt_key(key: str) -> str:
+    """Human display for a key binding: 'f6' -> 'F6', '<ctrl>+x' -> 'CTRL+X'."""
+    return "+".join(part.strip("<>").upper() for part in key.split("+"))
+
+
+def _controls_line(lm) -> str:
+    """Describe a LoadedMacro's controls, derived from its actual bindings so
+    the text can never disagree with what the keys really do."""
+    parts: list[str] = []
+    if lm.trigger_type == "expand" and lm.expand_pattern:
+        parts.append(f"Type '{lm.expand_pattern}' to trigger.")
+    if lm.hotkey:
+        if lm.hotkey_mode == "once":
+            parts.append(f"Press {_fmt_key(lm.hotkey)} to fire once per press.")
+        else:
+            parts.append(f"Press {_fmt_key(lm.hotkey)} to start/stop.")
+    elif lm.trigger_type != "expand":
+        parts.append("Starts immediately.")
+    if lm.exit_key:
+        parts.append(f"Press {_fmt_key(lm.exit_key)} to quit.")
+    return " ".join(parts)
+
 
 def _ensure_macro_exists(name: str) -> None:
     """Make sure `run` has a TOML to load: install the built-in preset of that

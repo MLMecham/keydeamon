@@ -144,6 +144,7 @@ class LoadedMacro:
         expand_replace: str | None,
         hotkey: str | None = None,
         hotkey_mode: str = "toggle",
+        description: str = "",
     ) -> None:
         self.name = name
         self.trigger_type = trigger_type
@@ -156,6 +157,7 @@ class LoadedMacro:
         self.expand_replace = expand_replace
         self.hotkey = hotkey
         self.hotkey_mode = hotkey_mode
+        self.description = description
 
 
 def load_macro(name: str) -> LoadedMacro:
@@ -184,6 +186,7 @@ def load_macro(name: str) -> LoadedMacro:
             exit_key=exit_key,
             expand_pattern=trigger.get("pattern"),
             expand_replace=behavior.get("replace"),
+            description=meta.get("description", ""),
         )
 
     repeat_raw = behavior.get("repeat", 1)
@@ -209,6 +212,7 @@ def load_macro(name: str) -> LoadedMacro:
         expand_replace=None,
         hotkey=trigger.get("hotkey"),
         hotkey_mode=trigger.get("mode", "toggle"),
+        description=meta.get("description", ""),
     )
 
 

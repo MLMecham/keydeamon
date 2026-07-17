@@ -132,3 +132,23 @@ sequence = ["press:ctrl", "press:shift", "press:alt", "tap:f12"]
     from keydaemon.guard import KillKeyError
     with pytest.raises(KillKeyError):
         loader.load_macro("sneaky")
+
+
+def test_description_is_loaded(tmp_path, monkeypatch):
+    path = _write(
+        tmp_path,
+        "descd",
+        """
+[meta]
+name = "descd"
+description = "Does a thing."
+
+[trigger]
+type = "loop"
+
+[actions]
+sequence = ["tap:space"]
+""",
+    )
+    monkeypatch.setattr(loader, "macro_path", lambda name: path)
+    assert loader.load_macro("descd").description == "Does a thing."

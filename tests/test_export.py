@@ -75,9 +75,10 @@ def test_newline_in_string_raises():
 
 def test_install_preset_writes_file(tmp_path, monkeypatch):
     monkeypatch.setattr(export, "macro_path", lambda n: tmp_path / f"{n}.toml")
+    from keydaemon.presets import autoclicker
     path = install_preset("autoclicker")
     assert path.exists()
-    assert 'hotkey = "o"' in path.read_text(encoding="utf-8")
+    assert f'hotkey = "{autoclicker.TOGGLE_KEY}"' in path.read_text(encoding="utf-8")
 
 
 def test_install_preset_refuses_overwrite_without_force(tmp_path, monkeypatch):

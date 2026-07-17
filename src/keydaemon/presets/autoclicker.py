@@ -2,13 +2,13 @@
 Autoclicker preset.
 
 Arms a toggle hotkey: press the toggle key to start clicking the left mouse
-button ~20x per second (±0.02s jitter) at the cursor, press it again
+button ~4x per second (±0.06s jitter) at the cursor, press it again
 to stop. The program stays alive between presses so you can start/stop as often
 as you like. Press the exit key to quit entirely.
 
 The jitter keeps the timing slightly irregular so it doesn't look perfectly
-robotic. For a configurable version (button, rate, keys), see
-examples/autoclicker.py.
+robotic. Same tuning as examples/autoclicker.py; for other buttons or
+double-clicks, edit the installed TOML or the example.
 """
 
 from __future__ import annotations
@@ -17,15 +17,16 @@ from keydaemon.builder import MacroBuilder
 
 # Single source of truth — build(), the startup message, and the tests all read
 # these. Change a key here and everything that mentions it follows.
-TOGGLE_KEY = "o"  # press to start clicking, press again to stop
-EXIT_KEY = "esc"  # press to quit
+# Keys and tuning match examples/autoclicker.py.
+TOGGLE_KEY = "f6"  # press to start clicking, press again to stop
+EXIT_KEY = "f8"  # press to quit
 
 
 def build() -> MacroBuilder:
     return (
         MacroBuilder()
-        .times_per_second(10)
-        .jitter(0.02)
+        .times_per_second(4)
+        .jitter(0.06)
         .click("left")
         .loop()
         .hotkey(TOGGLE_KEY)

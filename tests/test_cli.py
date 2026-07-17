@@ -195,3 +195,38 @@ def test_list_hides_preset_shadowed_by_toml(tmp_path, monkeypatch):
     monkeypatch.setattr(loader, "is_profile", lambda name: False)
     result = CliRunner().invoke(cli.main, ["list"])
     assert result.output.count("autoclicker") == 1  # the TOML entry, no preset dup
+
+
+def test_controls_line_toggle_hotkey_and_exit():
+    from keydaemon.loader import LoadedMacro
+    lm = LoadedMacro(
+        name="x", trigger_type="manual", actions=[], interval=0.25,
+        repeat_times=-1, jitter=0.0, exit_key="f8", expand_pattern=None,
+        expand_replace=None, hotkey="f6", hotkey_mode="toggle",
+    )
+    assert cli._controls_line(lm) == "Press F6 to start/stop. Press F8 to quit."
+
+
+def test_controls_line_expand_pattern():
+    from keydaemon.loader import LoadedMacro
+    lm = LoadedMacro(
+        name="x", trigger_type="expand", actions=[], interval=None,
+        repeat_times=1, jitter=0.0, exit_key=None, expand_pattern="///sig",
+        expand_replace="hi", hotkey=None,
+    )
+    assert cli._controls_line(lm) == "Type '///sig' to trigger."
+
+
+def test_controls_line_immediate_loop():
+    from keydaemon.loader import LoadedMacro
+    lm = LoadedMacro(
+        name="x", trigger_type="loop", actions=[], interval=5.0,
+        repeat_times=-1, jitter=0.0, exit_key=None, expand_pattern=None,
+        expand_replace=None, hotkey=None,
+    )
+    assert cli._controls_line(lm) == "Starts immediately."
+
+
+def test_fmt_key():
+    assert cli._fmt_key("f6") == "F6"
+    assert cli._fmt_key("<ctrl>+x") == "CTRL+X"
