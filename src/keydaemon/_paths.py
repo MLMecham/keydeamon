@@ -16,8 +16,16 @@ def macros_dir() -> Path:
     return p
 
 
-def pid_file() -> Path:
-    return data_dir() / "keydaemon.pid"
+def pids_dir() -> Path:
+    p = data_dir() / "pids"
+    p.mkdir(parents=True, exist_ok=True)
+    return p
+
+
+def pid_file(name: str) -> Path:
+    """PID file for one detached macro/profile — one file per name, so several
+    detached runs can coexist and be stopped individually."""
+    return pids_dir() / f"{name}.pid"
 
 
 def log_file() -> Path:

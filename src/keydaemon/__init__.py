@@ -29,7 +29,7 @@ def preset(name: str) -> MacroBuilder:
     """
     Load a named built-in preset and return its pre-configured MacroBuilder.
 
-    Available presets: minecraft_afk
+    See keydaemon.presets.available() for the names.
 
     Raises:
         ImportError: if no preset with that name exists.
@@ -38,9 +38,9 @@ def preset(name: str) -> MacroBuilder:
     try:
         mod = importlib.import_module(f"keydaemon.presets.{name}")
     except ModuleNotFoundError:
-        from keydaemon.presets import __all__ as available
+        from keydaemon.presets import available
         raise ImportError(
-            f"No preset named {name!r}. Available: {', '.join(available)}"
+            f"No preset named {name!r}. Available: {', '.join(available())}"
         ) from None
     return mod.build()
 

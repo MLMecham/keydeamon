@@ -8,7 +8,7 @@ from pathlib import Path
 
 import click
 
-from keydaemon._paths import macro_path, macros_dir, pid_file, log_file
+from keydaemon._paths import macro_path, macros_dir, pid_file, pids_dir, log_file
 from keydaemon._types import GLOBAL_KILL_KEY
 
 
@@ -103,16 +103,20 @@ def main() -> None:
 @click.argument("name")
 @click.option("--detach", is_flag=True, help="Run in background (detached from terminal).")
 def run(name: str, detach: bool) -> None:
-    """Run a macro or profile by name."""
+    """Run a macro, profile, or built-in preset by name.
+
+    TOML files in the macros directory always win; a built-in preset of that
+    name is installed as a TOML on first run so it can be edited like any macro.
+    """
     if detach:
         _run_detached(name)
         return
 
-    from keydaemon._paths import macro_path
     from keydaemon.loader import is_profile, load_macro, load_profile
     from keydaemon.profile import Profile, stop_all
     from keydaemon.runner import make_runner
 
+    _ensure_macro_exists(name)
     click.echo(f"Emergency kill: {GLOBAL_KILL_KEY}  (or: keydaemon stop)")
 
     if is_profile(name):
@@ -141,21 +145,16 @@ def run(name: str, detach: bool) -> None:
 @main.command()
 @click.argument("name", required=False)
 def stop(name: str | None) -> None:
-    """Stop all running macros, or a specific profile by name."""
-    pid = _read_pid()
-    if pid:
-        try:
-            if sys.platform == "win32":
-                subprocess.run(["taskkill", "/PID", str(pid), "/F"], check=False, capture_output=True)
-            else:
-                os.kill(pid, signal.SIGTERM)
-            pid_file().unlink(missing_ok=True)
-            click.echo("Stopped.")
-        except ProcessLookupError:
-            pid_file().unlink(missing_ok=True)
-            click.echo("No process found (already stopped).")
-    else:
-        click.echo("No running keydaemon process found.")
+    """Stop a detached macro/profile by name, or all of them if no name given."""
+    if name is not None:
+        _stop_one(pid_file(name), name)
+        return
+    files = sorted(pids_dir().glob("*.pid"))
+    if not files:
+        click.echo("No running keydaemon processes found.")
+        return
+    for f in files:
+        _stop_one(f, f.stem)
 
 
 @main.command(name="list")
@@ -164,11 +163,20 @@ def list_macros() -> None:
     from keydaemon.loader import list_macros, is_profile
     names = list_macros()
     if not names:
-        click.echo(f"No macros found in {macros_dir()}")
-        return
+        click.echo(f"No macros in {macros_dir()} — only built-in presets:")
     for name in names:
         tag = " [profile]" if is_profile(name) else ""
+        pid = _read_pid(pid_file(name))
+        if pid is not None:
+            if _pid_alive(pid):
+                tag += f" [running, PID {pid}]"
+            else:
+                pid_file(name).unlink(missing_ok=True)  # stale — process is gone
         click.echo(f"  {name}{tag}")
+    from keydaemon.presets import available
+    for pname in available():
+        if pname not in names:
+            click.echo(f"  {pname} [built-in preset - installs as TOML on first run]")
 
 
 @main.command()
@@ -176,11 +184,24 @@ def list_macros() -> None:
 @click.option("--type", "macro_type", default="loop",
               type=click.Choice(["loop", "expand", "manual", "profile"]),
               help="Type of macro to scaffold.")
-def new(name: str, macro_type: str) -> None:
-    """Create a new macro file from a template."""
+@click.option("--from", "from_preset", default=None, metavar="PRESET",
+              help="Generate from a built-in preset instead of a blank template.")
+@click.option("--force", is_flag=True,
+              help="Overwrite an existing macro file (e.g. to reset a preset to defaults).")
+def new(name: str, macro_type: str, from_preset: str | None, force: bool) -> None:
+    """Create a new macro file from a template or a built-in preset."""
+    if from_preset is not None:
+        from keydaemon.export import install_preset
+        try:
+            path = install_preset(from_preset, as_name=name, force=force)
+        except (ValueError, FileExistsError) as e:
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(1)
+        click.echo(f"Created {path} from preset '{from_preset}'")
+        return
     path = macro_path(name)
-    if path.exists():
-        click.echo(f"Error: {path} already exists.", err=True)
+    if path.exists() and not force:
+        click.echo(f"Error: {path} already exists (use --force to overwrite).", err=True)
         sys.exit(1)
     content = MACRO_TEMPLATES[macro_type].format(name=name)
     path.write_text(content, encoding="utf-8")
@@ -216,7 +237,41 @@ def disable(name: str) -> None:
 # Helpers
 # ---------------------------------------------------------------------------
 
+def _ensure_macro_exists(name: str) -> None:
+    """Make sure `run` has a TOML to load: install the built-in preset of that
+    name on first run, or exit with an error naming what IS available."""
+    if macro_path(name).exists():
+        return
+    from keydaemon.presets import available
+
+    presets = available()
+    if name not in presets:
+        click.echo(
+            f"Error: no macro or built-in preset named '{name}'.\n"
+            f"Macros dir: {macros_dir()}\n"
+            f"Built-in presets: {', '.join(presets)}",
+            err=True,
+        )
+        sys.exit(1)
+    from keydaemon.export import install_preset
+
+    path = install_preset(name)
+    click.echo(f"First run of built-in preset '{name}' - installed {path}")
+    click.echo(f"Edit that file to customize; reset it with: keydaemon new {name} --from {name} --force")
+
+
 def _run_detached(name: str) -> None:
+    _ensure_macro_exists(name)
+    pf = pid_file(name)
+    existing = _read_pid(pf)
+    if existing is not None and _pid_alive(existing):
+        click.echo(
+            f"Error: '{name}' is already running (PID {existing}). "
+            f"Stop it first: keydaemon stop {name}",
+            err=True,
+        )
+        sys.exit(1)
+
     cmd = [sys.executable, "-m", "keydaemon", "run", name]
     log = log_file().open("a")
     if sys.platform == "win32":
@@ -228,20 +283,72 @@ def _run_detached(name: str) -> None:
         )
     else:
         proc = subprocess.Popen(cmd, stdout=log, stderr=log, start_new_session=True)
-    pid_file().write_text(str(proc.pid))
+    pf.write_text(str(proc.pid))
     click.echo(f"Running '{name}' in background. PID: {proc.pid}")
-    click.echo(f"Emergency kill: {GLOBAL_KILL_KEY}  (or: keydaemon stop)")
+    click.echo(f"Emergency kill: {GLOBAL_KILL_KEY}  (or: keydaemon stop {name})")
     click.echo(f"Logs: {log_file()}")
 
 
-def _read_pid() -> int | None:
-    p = pid_file()
-    if not p.exists():
+def _read_pid(pf: Path) -> int | None:
+    if not pf.exists():
         return None
     try:
-        return int(p.read_text().strip())
+        return int(pf.read_text().strip())
     except (ValueError, OSError):
         return None
+
+
+def _pid_alive(pid: int) -> bool:
+    """True if a process with this PID is still running.
+
+    NEVER use os.kill(pid, 0) on Windows — any sig other than the two console
+    events calls TerminateProcess, i.e. it would KILL the process we're probing.
+    """
+    if sys.platform == "win32":
+        import ctypes
+
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        STILL_ACTIVE = 259
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+        if not handle:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            ok = kernel32.GetExitCodeProcess(handle, ctypes.byref(code))
+            return bool(ok) and code.value == STILL_ACTIVE
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True  # exists, just not ours
+
+
+def _kill_pid(pid: int) -> None:
+    if sys.platform == "win32":
+        subprocess.run(["taskkill", "/PID", str(pid), "/F"], check=False, capture_output=True)
+    else:
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+
+
+def _stop_one(pf: Path, name: str) -> None:
+    pid = _read_pid(pf)
+    if pid is None:
+        click.echo(f"No running process for '{name}'.")
+        return
+    if _pid_alive(pid):
+        _kill_pid(pid)
+        click.echo(f"Stopped '{name}' (PID {pid}).")
+    else:
+        click.echo(f"'{name}' was already stopped (cleaning up stale PID {pid}).")
+    pf.unlink(missing_ok=True)
 
 
 def _capture_clicks(name: str) -> None:

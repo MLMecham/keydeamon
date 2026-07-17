@@ -1,3 +1,9 @@
-"""Built-in presets. Load with keydaemon.preset("name")."""
+"""Built-in presets. Run with `keydaemon run <name>` or load with keydaemon.preset(name)."""
 
-__all__ = ["autoclicker", "minecraft_afk"]
+
+def available() -> list[str]:
+    """Names of every built-in preset, discovered from the package contents."""
+    import pkgutil
+    return sorted(
+        m.name for m in pkgutil.iter_modules(__path__) if not m.name.startswith("_")
+    )
