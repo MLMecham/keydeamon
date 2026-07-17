@@ -1,1 +1,0 @@
-place images here for reference by your documentation.

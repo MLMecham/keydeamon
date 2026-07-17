@@ -1,37 +1,50 @@
 site_name: keydaemon
+site_description: A programmable keyboard/mouse automation daemon — clean Python API + CLI, with a kill key that always works.
 site_url: https://mlmecham.github.io/keydaemon
+repo_url: https://github.com/MLMecham/keydeamon
+repo_name: MLMecham/keydeamon
+
 theme:
   name: material
-  icon:
-    logo: fontawesome/solid/wind
-  favicon: assets/favicon.ico
-  featuers:
+  logo: assets/logos/KeyDaemon_NoBack.png
+  favicon: assets/logos/KeyDaemon_NoBack.png
+  features:
+    - navigation.tabs
+    - navigation.top
     - navigation.footer
+    - content.code.copy
+    - search.suggest
   font:
     text: Merriweather Sans
     code: Red Hat Mono
   palette:
-    # Dark Mode
+    # Dark mode first — the daemon prefers the dark.
     - scheme: slate
+      primary: red
+      accent: deep orange
       toggle:
         icon: material/weather-sunny
-        name: Dark mode
-      primary: green
-      accent: deep purple
-
-    # Light Mode
+        name: Switch to light mode
     - scheme: default
+      primary: red
+      accent: deep orange
       toggle:
         icon: material/weather-night
-        name: Light mode
-      primary: blue
-      accent: deep orange
+        name: Switch to dark mode
+
+nav:
+  - Home: index.md
+  - CLI Guide: cli.md
+  - Safety & Kill Keys: safety.md
+  - Examples: examples.md
+  - API Reference: API.md
 
 watch:
   - src/keydaemon
 
 markdown_extensions:
   - attr_list
+  - md_in_html
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
@@ -40,6 +53,7 @@ markdown_extensions:
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
+  - pymdownx.keys
   - pymdownx.snippets
   - pymdownx.superfences:
       custom_fences:
@@ -64,9 +78,9 @@ plugins:
 
 extra:
   social:
-    - icon: fontawesome/brands/youtube
-      link: https://www.youtube.com/@byuidss
+    - icon: fontawesome/brands/github
+      link: https://github.com/MLMecham
     - icon: fontawesome/brands/linkedin
-      link: https://www.linkedin.com/school/byu-idaho
+      link: https://www.linkedin.com/in/mitchell-mecham/
 
 copyright: Copyright &copy; 2026 Mitchell Mecham

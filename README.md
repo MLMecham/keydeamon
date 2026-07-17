@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/logos/KeyDaemon_NoBack.png" width="220" alt="KeyDaemon logo">
+</p>
+
 # keydaemon
 
 A lightweight, programmable keyboard/mouse automation daemon for personal use — a clean Python API and CLI instead of a GUI macro recorder. It runs quietly in the background: text expansion, anti-AFK loops, form filling, autoclickers, drawing, and pixel-watching.
@@ -54,8 +58,8 @@ import keydaemon
 keydaemon.preset("autoclicker").run().join()
 ```
 
-- **O** → start/stop clicking (hover your cursor over the target first)
-- **Esc** → quit
+- **F6** → start/stop clicking (hover your cursor over the target first)
+- **F8** → quit
 
 Run it straight from the preset file:
 
@@ -140,7 +144,7 @@ keydaemon is built so a runaway thread can't survive. Every runner auto-register
 | Key / call | Scope |
 |---|---|
 | `exit_key("esc")` | Stop this macro/profile |
-| Toggle hotkey (e.g. `O`) | Pause/resume the clicker (program stays alive) |
+| Toggle hotkey (e.g. `F6`) | Pause/resume the clicker (program stays alive) |
 | **Ctrl + Shift + Alt + F12** | Emergency kill — stops **every** macro, always |
 | `keydaemon.stop_all()` / `keydaemon stop` | Stop everything |
 
@@ -186,7 +190,7 @@ sequence = ["click:left"]
 
 | Preset | What it does |
 |---|---|
-| `autoclicker` | Toggle-hotkey left-clicker (O toggles, Esc quits) |
+| `autoclicker` | Toggle-hotkey left-clicker (F6 toggles, F8 quits) |
 | `minecraft_afk` | Singleplayer anti-AFK: nudge forward/back/jump every ~4.5 min |
 
 ```python
@@ -202,3 +206,16 @@ keydaemon.preset("minecraft_afk").run()
 - [`examples/flower.py`](examples/flower.py) — draws a rose-curve flower in a browser sketch app
 
 See [`PLAN.md`](PLAN.md) for the full architecture and design notes.
+
+---
+
+## Documentation site
+
+The docs are an [MkDocs Material](https://squidfunk.github.io/mkdocs-material/) site (pages in `docs/`, config in `mkdocs.yml`).
+
+```bash
+uv sync --extra docs          # install the docs toolchain
+uv run mkdocs serve           # live-reload preview at http://127.0.0.1:8000
+uv run mkdocs build           # static site into site/
+uv run mkdocs gh-deploy       # publish to GitHub Pages (gh-pages branch)
+```
