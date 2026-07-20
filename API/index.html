@@ -1,0 +1,3117 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A programmable keyboard/mouse automation daemon — clean Python API + CLI, with a kill key that always works.">
+      
+      
+      
+        <link rel="canonical" href="https://mlmecham.github.io/keydeamon/API/">
+      
+      
+        <link rel="prev" href="../examples/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/logos/KeyDaemon_NoBack.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>API Reference - keydaemon</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Merriweather+Sans:300,300i,400,400i,700,700i%7CRed+Hat+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Merriweather Sans";--md-code-font:"Red Hat Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="keydaemon" class="md-header__button md-logo" aria-label="keydaemon" data-md-component="logo">
+      
+  <img src="../assets/logos/KeyDaemon_NoBack.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            keydaemon
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/MLMecham/keydeamon" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MLMecham/keydeamon
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../cli/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../safety/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Safety & Kill Keys
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../examples/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Examples
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="keydaemon" class="md-nav__button md-logo" aria-label="keydaemon" data-md-component="logo">
+      
+  <img src="../assets/logos/KeyDaemon_NoBack.png" alt="logo">
+
+    </a>
+    keydaemon
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/MLMecham/keydeamon" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    MLMecham/keydeamon
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../safety/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Safety & Kill Keys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#public-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public API
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        keydaemon
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.macro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        macro
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.preset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        preset
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.load" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.stop_all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stop_all
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#macrobuilder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MacroBuilder
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MacroBuilder
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        do
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.drag_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        drag_to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.expand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        expand
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.hotkey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hotkey
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.kill_all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kill_all
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.save" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.stop_self" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stop_self
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.times_per_second" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        times_per_second
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Actions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        actions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.actions.DoAction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DoAction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.actions.InputController" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InputController
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.actions.KillAllAction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KillAllAction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.actions.SelfStopAction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SelfStopAction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runners
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.runner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        runner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.runner.ExpandRunner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExpandRunner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.runner.HotkeyRunner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HotkeyRunner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.runner.Runner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Runner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keydaemon.runner.Runner.add_child" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add_child
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.runner.make_runner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        make_runner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.runner.stop_all_runners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stop_all_runners
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.profile.Profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.profile.stop_all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stop_all
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kill-key-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kill-Key Guard
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        guard
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.guard.KillKeyError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KillKeyError
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.guard.ensure_kill_key_unreachable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ensure_kill_key_unreachable
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preset-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preset Export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.export.builder_to_toml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        builder_to_toml
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.export.install_preset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        install_preset
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scheduler
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.scheduler.run_scheduled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_scheduled
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#screen-utilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Screen Utilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.screen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        screen
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.screen.color_matches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        color_matches
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.screen.get_pixel_color" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_pixel_color
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.screen.get_pixel_hex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_pixel_hex
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.screen.hex_to_rgb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hex_to_rgb
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#public-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public API
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        keydaemon
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.macro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        macro
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.preset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        preset
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.load" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.stop_all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stop_all
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#macrobuilder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MacroBuilder
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MacroBuilder
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        do
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.drag_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        drag_to
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.expand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        expand
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.hotkey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hotkey
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.kill_all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kill_all
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.save" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        save
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.stop_self" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stop_self
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.builder.MacroBuilder.times_per_second" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        times_per_second
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Actions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        actions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.actions.DoAction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DoAction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.actions.InputController" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InputController
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.actions.KillAllAction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KillAllAction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.actions.SelfStopAction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SelfStopAction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#runners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runners
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.runner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        runner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.runner.ExpandRunner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ExpandRunner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.runner.HotkeyRunner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HotkeyRunner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.runner.Runner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runner
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Runner">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keydaemon.runner.Runner.add_child" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        add_child
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.runner.make_runner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        make_runner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.runner.stop_all_runners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stop_all_runners
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.profile.Profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.profile.stop_all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stop_all
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kill-key-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kill-Key Guard
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        guard
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.guard.KillKeyError" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KillKeyError
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.guard.ensure_kill_key_unreachable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ensure_kill_key_unreachable
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preset-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preset Export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.export.builder_to_toml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        builder_to_toml
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.export.install_preset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        install_preset
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scheduler
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.scheduler.run_scheduled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_scheduled
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#screen-utilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Screen Utilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.screen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        screen
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.screen.color_matches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        color_matches
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.screen.get_pixel_color" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_pixel_color
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.screen.get_pixel_hex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_pixel_hex
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keydaemon.screen.hex_to_rgb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hex_to_rgb
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="api-reference">API Reference</h1>
+<h2 id="public-api">Public API</h2>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="keydaemon"></a>
+    <div class="doc doc-contents first">
+
+        <p>keydaemon — background daemon for keyboard/mouse automation.</p>
+
+
+<details class="public-api" open>
+  <summary>Public API</summary>
+  <p>macro()           → MacroBuilder (fluent builder)
+preset(name)      → MacroBuilder (pre-configured)
+load(name)        → MacroBuilder (from TOML file)
+stop_all()        → None</p>
+</details>
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.macro" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">macro</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return a new empty MacroBuilder.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.preset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">preset</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Load a named built-in preset and return its pre-configured MacroBuilder.</p>
+<p>See keydaemon.presets.available() for the names.</p>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ImportError">ImportError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>if no preset with that name exists.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.load" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">load</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Load a macro or profile from a TOML file in the keydaemon data directory.</p>
+<p>For profiles, returns a builder whose .run() starts all listed macros.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.stop_all" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">stop_all</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Kill everything. Two independent passes so nothing can survive:</p>
+<ol>
+<li>Ordered teardown through the profile tree — stops runners the clean way
+   (releases held inputs, stops listeners child-first).</li>
+<li>Flat backstop sweep of every runner ever created — catches anything the
+   tree can't reach (e.g. a child whose owning profile was garbage collected,
+   since _PROFILE_REGISTRY holds only weak references).</li>
+</ol>
+<p>Runner.stop() is idempotent, so a runner hit by both passes stops once.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="macrobuilder">MacroBuilder</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<a id="keydaemon.builder.MacroBuilder"></a>
+    <div class="doc doc-contents first">
+
+
+
+        <p>Fluent builder — accumulates state, does nothing until .run().</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.builder.MacroBuilder.do" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">do</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Run the saved macro <code>name</code>'s action sequence at this point.</p>
+<p>Python twin of the TOML <code>do:</code> verb. Stored as a reference, not a
+copy: .run() reads the target's TOML fresh each time (editing the
+target changes every macro that does it), and .save() writes
+<code>do:name</code> so the reference survives in the file. Only the target's
+actions run — its own scheduling (every/repeat/jitter) is ignored.
+Circular references and profile targets are rejected at run time.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.builder.MacroBuilder.drag_to" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">drag_to</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Sugar: move to start, hold left, smooth move to end, release.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.builder.MacroBuilder.expand" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">expand</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Trigger on typed text: whenever <code>pattern</code> is typed anywhere, the trigger
+text is erased and <code>replace</code> is typed in its place.</p>
+<p>Call repeatedly to build a <em>bank</em> — every entry shares one keyboard
+listener::</p>
+<div class="language-text highlight"><pre><span></span><code>keydaemon.macro().expand(&quot;///a&quot;, &quot;Hello&quot;).expand(&quot;///b&quot;, &quot;cool dudes only&quot;)
+</code></pre></div>
+<p>With replace=None, typing the pattern runs this macro's action sequence
+instead of typing text (at most one such action pattern per macro).</p>
+<p>Patterns must be typed without modifier keys mid-pattern (lowercase);
+any special key resets the match buffer.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.builder.MacroBuilder.hotkey" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">hotkey</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;toggle&#39;</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Arm this macro behind a hotkey instead of running immediately.</p>
+<p>mode="toggle" (default): press the key to start the loop, press again to
+stop it. mode="once": each press fires the loop a single time.
+The program stays alive between presses; use exit_key to quit entirely.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.builder.MacroBuilder.kill_all" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">kill_all</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Stop EVERY macro in the process when reached — the programmatic
+equivalent of the emergency kill key. Pair with conditions (e.g. a
+wait_for_color) to bail out of all automation when something looks wrong.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.builder.MacroBuilder.save" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">save</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Write this macro to the keydaemon macros directory as <code>&lt;name&gt;.toml</code>,
+overwriting any existing file of that name — the Python script is the
+source of truth, so running it stamps its current behavior over the TOML.</p>
+<p>The saved file is a first-class CLI macro: run it with
+<code>keydaemon run &lt;name&gt;</code>, see it in <code>keydaemon list</code>, detach it,
+stop it by name.</p>
+<p>Raises ValueError if the macro uses Python-only features that TOML
+can't express (the file is left untouched in that case).</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.builder.MacroBuilder.stop_self" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">stop_self</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Stop this macro (and its runner's children) when reached.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.builder.MacroBuilder.times_per_second" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">times_per_second</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set the loop rate as a frequency instead of a period.</p>
+<p><code>times_per_second(20)</code> is sugar for <code>every(1 / 20)</code>. Clickers and
+anti-AFK loops are easier to reason about in Hz than in seconds.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="actions">Actions</h2>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="keydaemon.actions"></a>
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="keydaemon.actions.DoAction" class="doc doc-heading">
+            <code>DoAction</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Reference to another saved macro's action sequence (builder <code>.do()</code>).</p>
+<p>A reference, never executed: MacroBuilder.run() flattens it into the
+target's actions via loader.resolve_do_actions() before any runner sees
+it, and .save() writes it back as a <code>do:&lt;name&gt;</code> string (the TOML loader
+flattens that form itself at load time).</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="keydaemon.actions.InputController" class="doc doc-heading">
+            <code>InputController</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="typing.Protocol">Protocol</span></code></p>
+
+
+
+        <p>Structural protocol — tests inject a mock without subclassing.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="keydaemon.actions.KillAllAction" class="doc doc-heading">
+            <code>KillAllAction</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Stop every macro in the process — same effect as the emergency kill key.</p>
+<p>This is the sanctioned way for a macro to invoke the global kill (the
+hardware combo itself is reserved and unbindable; see keydaemon.guard).
+Exists so conditional macros can bail out of everything, e.g.
+"if the screen goes red, kill all automation".</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="keydaemon.actions.SelfStopAction" class="doc doc-heading">
+            <code>SelfStopAction</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Stop the macro this action runs in (and any children of its runner).</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="runners">Runners</h2>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="keydaemon.runner"></a>
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="keydaemon.runner.ExpandRunner" class="doc doc-heading">
+            <code>ExpandRunner</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="Runner (keydaemon.runner.Runner)" href="#keydaemon.runner.Runner">Runner</a></code></p>
+
+
+
+        <p>Listens for typed text patterns — a <em>bank</em> of them — with one listener.</p>
+<p>Two kinds of entry share the single keyboard listener and match buffer:</p>
+<ul>
+<li>expansions: {pattern: replacement} — typing a pattern erases it and
+  types its replacement. Many can be armed at once ("///a", "///b", ...).</li>
+<li>one optional action pattern — typing it erases it and fires this
+  macro's action sequence instead of text.</li>
+</ul>
+<p>Matching uses a rolling buffer capped at the longest pattern: each typed
+character appends, the tail is kept, and a fire happens the moment the
+buffer ends with any armed pattern. Any non-character key resets the match.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="keydaemon.runner.HotkeyRunner" class="doc doc-heading">
+            <code>HotkeyRunner</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="Runner (keydaemon.runner.Runner)" href="#keydaemon.runner.Runner">Runner</a></code></p>
+
+
+
+        <p>Arms a global hotkey that starts/stops a child action loop.</p>
+<p>Unlike DaemonRunner (which runs immediately) or ExpandRunner (which fires on
+typed text), HotkeyRunner stays armed and reacts to a single hotkey:</p>
+<div class="language-text highlight"><pre><span></span><code>mode=&quot;toggle&quot;  press starts the child loop; press again stops it.
+               The same key is both &quot;start&quot; and &quot;stop&quot; — a real toggle.
+mode=&quot;once&quot;    each press fires the child loop once (ignored while it&#39;s
+               still running, so presses don&#39;t stack).
+</code></pre></div>
+<p>The runner itself lives until stop() (listener stays alive between presses),
+so exit_key / global kill / stop_all terminate it <em>and</em> any running child.</p>
+<p>A FRESH DaemonRunner is built on every start because DaemonRunner.stop()
+latches its stop event and cannot be restarted.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="keydaemon.runner.Runner" class="doc doc-heading">
+            <code>Runner</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Lifecycle base for every runner — the single mechanism that makes runaway
+threads impossible.</p>
+<p>Three guarantees, none of which a subclass can accidentally opt out of:</p>
+<ol>
+<li>Auto-registration: <strong>init</strong> adds self to _ALL_RUNNERS. You cannot build a
+   runner that escapes the global backstop sweep.</li>
+<li>Idempotent, cascading stop(): stops children first, then self, exactly
+   once. Safe to call from the owner tree AND the flat sweep — they overlap
+   harmlessly.</li>
+<li>Template-method teardown: subclasses implement _stop_self() (kill my
+   thread/listener). They can't forget to stop children — the base does it.</li>
+</ol>
+<p>Children are stopped before parents so a supervisor (e.g. HotkeyRunner)
+always tears its loop down before releasing its own listener.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="keydaemon.runner.Runner.add_child" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_child</span><span class="p">(</span><span class="n">child</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Register a sub-runner so stop() cascades to it (children-first).</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.runner.make_runner" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">make_runner</span><span class="p">(</span><span class="n">lm</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Build the right runner for a loaded macro. Single source of truth so the CLI,
+profile loader, and Python API never drift on how a macro maps to a runner.</p>
+<p><code>lm</code> is a keydaemon.loader.LoadedMacro (duck-typed to avoid an import cycle).</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.runner.stop_all_runners" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">stop_all_runners</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Hard backstop: stop every live runner, regardless of who owns it.</p>
+<p>stop() is idempotent, so calling this alongside an ordered profile teardown
+is safe — anything already stopped is a no-op, anything orphaned still dies.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="profile">Profile</h2>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="keydaemon.profile"></a>
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="keydaemon.profile.Profile" class="doc doc-heading">
+            <code>Profile</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Execution context — owns a set of runners, an exit key, and the global kill listener.
+Every macro runs inside a Profile (explicit or implicit).</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.profile.stop_all" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">stop_all</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Kill everything. Two independent passes so nothing can survive:</p>
+<ol>
+<li>Ordered teardown through the profile tree — stops runners the clean way
+   (releases held inputs, stops listeners child-first).</li>
+<li>Flat backstop sweep of every runner ever created — catches anything the
+   tree can't reach (e.g. a child whose owning profile was garbage collected,
+   since _PROFILE_REGISTRY holds only weak references).</li>
+</ol>
+<p>Runner.stop() is idempotent, so a runner hit by both passes stops once.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="kill-key-guard">Kill-Key Guard</h2>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="keydaemon.guard"></a>
+    <div class="doc doc-contents first">
+
+        <p>Load-time protection for the emergency kill key.</p>
+<p>GLOBAL_KILL_KEY is the one input that must always work: it is the user's
+last resort when a macro floods the machine with synthetic events. Macros
+therefore may not bind it as a hotkey/exit key, and may not synthesize the
+combo by pressing its keys — either would shadow or hijack the escape hatch.</p>
+<p>Macros that legitimately want kill semantics have sanctioned actions instead:
+<code>stop:self</code> / <code>.stop_self()</code> (this macro and its children) and
+<code>stop:all</code> / <code>.kill_all()</code> (every macro in the process).</p>
+<p>Both the TOML loader and MacroBuilder.run() call ensure_kill_key_unreachable(),
+so there is no path into a running macro that skips this check.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="keydaemon.guard.KillKeyError" class="doc doc-heading">
+            <code>KillKeyError</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="ValueError">ValueError</span></code></p>
+
+
+
+        <p>A macro tried to bind or synthesize the emergency kill combo.</p>
+
+
+
+
+
+
+
+
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.guard.ensure_kill_key_unreachable" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">ensure_kill_key_unreachable</span><span class="p">(</span><span class="n">actions</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">hotkey</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exit_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Raise KillKeyError if a macro could bind or type GLOBAL_KILL_KEY.</p>
+<p>Checks two attack surfaces:
+1. Key bindings (hotkey / exit_key) that cover the whole kill combo.
+2. The action sequence: walks Press/Release/Tap tracking which keys are
+   held, and rejects the moment all kill-combo keys would be down at once.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="preset-export">Preset Export</h2>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="keydaemon.export"></a>
+    <div class="doc doc-contents first">
+
+        <p>Serialize a MacroBuilder to macro TOML — the reverse of loader._parse_action.</p>
+<p>Built-in presets are Python (MacroBuilder code), but the CLI runs only TOML
+files from the macros directory. Rather than teaching the CLI a second dispatch
+path, a preset is <em>installed</em>: its builder is serialized to a normal TOML file
+the user can read, edit, and re-run like any hand-written macro. Regenerating
+the file (keydaemon new <name> --from <preset> --force) resets it to defaults.</p>
+<p>Python can express things TOML can't (computed values, per-action jitter
+overrides, non-default tolerances). If a preset ever uses one of those, this
+module raises rather than silently dropping the detail — such a preset must
+stay Python-only.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.export.builder_to_toml" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">builder_to_toml</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Render a MacroBuilder as macro TOML that load_macro() reads back identically.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.export.install_preset" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">install_preset</span><span class="p">(</span><span class="n">preset_name</span><span class="p">,</span> <span class="n">as_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Materialize a built-in preset as a TOML file in the macros directory.</p>
+<p>as_name lets a preset be forked under a different macro name. Refuses to
+overwrite an existing file unless force=True (regeneration).</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="scheduler">Scheduler</h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<a id="keydaemon.scheduler.run_scheduled"></a>
+    <div class="doc doc-contents first">
+
+        <p>Blocking scheduler loop — intended to run inside a DaemonRunner thread.</p>
+<p>Executes the action list, waits the interval (with jitter), then repeats.
+Sleeps in SCHEDULER_TICK increments so stop_requested() is checked frequently.</p>
+
+
+    </div>
+
+</div><h2 id="screen-utilities">Screen Utilities</h2>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="keydaemon.screen"></a>
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.screen.color_matches" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">color_matches</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hex_color</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return True if the pixel at (x, y) is within tolerance of hex_color.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.screen.get_pixel_color" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_pixel_color</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the RGB color of the pixel at screen coordinates (x, y).</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.screen.get_pixel_hex" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_pixel_hex</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the hex color string of the pixel at (x, y), e.g. '#3A7D44'.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="keydaemon.screen.hex_to_rgb" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">hex_to_rgb</span><span class="p">(</span><span class="n">hex_color</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Convert a hex color string like '#3A7D44' or '3A7D44' to (r, g, b).</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../examples/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Examples">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Examples
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Mitchell Mecham
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/MLMecham" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://www.linkedin.com/in/mitchell-mecham/" target="_blank" rel="noopener" title="www.linkedin.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3M135.4 416H69V202.2h66.5V416zM102.2 96a38.5 38.5 0 1 1 0 77 38.5 38.5 0 1 1 0-77m282.1 320h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "navigation.footer", "content.code.copy", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
