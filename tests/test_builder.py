@@ -234,3 +234,49 @@ def test_saved_macro_loads_back_identically(tmp_path, monkeypatch):
     assert lm.hotkey == "f6"
     assert lm.exit_key == "f8"
     assert lm.interval == 0.25
+
+
+def test_do_appends_reference():
+    from keydaemon.actions import DoAction
+    b = MacroBuilder().tap("w").do("greeting")
+    assert b._actions[1] == DoAction(name="greeting")
+
+
+def test_run_resolves_do_refs(tmp_path, monkeypatch):
+    from keydaemon import loader
+    monkeypatch.setattr(loader, "macro_path", lambda n: tmp_path / f"{n}.toml")
+    (tmp_path / "child.toml").write_text(
+        '[actions]\nsequence = ["tap:x"]\n', encoding="utf-8"
+    )
+
+    r = MacroBuilder().tap("a").do("child").run()
+    try:
+        from keydaemon.actions import DoAction
+        assert r._actions == [TapAction(key="a"), TapAction(key="x")]
+        assert not any(isinstance(a, DoAction) for a in r._actions)
+    finally:
+        r.stop()
+
+
+def test_run_rejects_kill_combo_smuggled_via_do(tmp_path, monkeypatch):
+    import pytest
+    from keydaemon import loader
+    from keydaemon.guard import KillKeyError
+
+    monkeypatch.setattr(loader, "macro_path", lambda n: tmp_path / f"{n}.toml")
+    (tmp_path / "finisher.toml").write_text(
+        '[actions]\nsequence = ["press:alt", "tap:f12"]\n', encoding="utf-8"
+    )
+
+    # Parent holds half the kill combo, the sub-macro supplies the rest —
+    # the guard must see the flattened sequence.
+    b = MacroBuilder().press("ctrl").press("shift").do("finisher")
+    with pytest.raises(KillKeyError):
+        b.run()
+
+
+def test_unresolved_do_action_refuses_to_execute():
+    import pytest
+    from keydaemon.actions import DoAction
+    with pytest.raises(RuntimeError, match="Unresolved"):
+        DoAction(name="x").execute(None)

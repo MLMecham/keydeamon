@@ -221,3 +221,121 @@ type = "expand"
     import pytest
     with pytest.raises(ValueError, match="re-trigger"):
         loader.load_macro("bad")
+
+
+# ---------------------------------------------------------------------------
+# do: references (TOML) and resolve_do_actions (builder .do())
+# ---------------------------------------------------------------------------
+
+def _write_macros(tmp_path, monkeypatch, files):
+    """Write several macro TOMLs and point the loader's macros dir at them."""
+    for name, text in files.items():
+        _write(tmp_path, name, text)
+    monkeypatch.setattr(loader, "macro_path", lambda name: tmp_path / f"{name}.toml")
+
+
+_CHILD = """
+[actions]
+sequence = ["tap:x", "wait:0.1"]
+"""
+
+
+def test_do_inlines_target_actions(tmp_path, monkeypatch):
+    from keydaemon.actions import TapAction, WaitAction
+
+    _write_macros(
+        tmp_path,
+        monkeypatch,
+        {
+            "parent": """
+[trigger]
+type = "loop"
+
+[actions]
+sequence = ["tap:a", "do:child", "tap:b"]
+""",
+            "child": _CHILD,
+        },
+    )
+    lm = loader.load_macro("parent")
+    assert lm.actions == [
+        TapAction(key="a"),
+        TapAction(key="x"),
+        WaitAction(seconds=0.1),
+        TapAction(key="b"),
+    ]
+
+
+def test_do_circular_reference_rejected(tmp_path, monkeypatch):
+    import pytest
+
+    _write_macros(
+        tmp_path,
+        monkeypatch,
+        {
+            "a": '[actions]\nsequence = ["do:b"]\n',
+            "b": '[actions]\nsequence = ["do:a"]\n',
+        },
+    )
+    with pytest.raises(ValueError, match="Circular"):
+        loader.load_macro("a")
+
+
+def test_do_profile_target_rejected(tmp_path, monkeypatch):
+    import pytest
+
+    _write_macros(
+        tmp_path,
+        monkeypatch,
+        {
+            "parent": '[actions]\nsequence = ["do:team"]\n',
+            # meta-style profile declaration (load_profile accepts both forms)
+            "team": '[meta]\ntype = "profile"\n\n[macros]\nrun = ["x"]\n',
+        },
+    )
+    with pytest.raises(ValueError, match="profile"):
+        loader.load_macro("parent")
+
+
+def test_resolve_do_actions_flattens_refs(tmp_path, monkeypatch):
+    from keydaemon.actions import DoAction, TapAction, WaitAction
+
+    _write_macros(tmp_path, monkeypatch, {"child": _CHILD})
+    resolved = loader.resolve_do_actions(
+        [TapAction(key="a"), DoAction(name="child"), TapAction(key="b")]
+    )
+    assert resolved == [
+        TapAction(key="a"),
+        TapAction(key="x"),
+        WaitAction(seconds=0.1),
+        TapAction(key="b"),
+    ]
+
+
+def test_resolve_do_actions_reads_fresh_each_call(tmp_path, monkeypatch):
+    from keydaemon.actions import DoAction, TapAction
+
+    _write_macros(tmp_path, monkeypatch, {"child": '[actions]\nsequence = ["tap:x"]\n'})
+    ref = [DoAction(name="child")]
+    assert loader.resolve_do_actions(ref) == [TapAction(key="x")]
+
+    _write(tmp_path, "child", '[actions]\nsequence = ["tap:y"]\n')
+    assert loader.resolve_do_actions(ref) == [TapAction(key="y")]
+
+
+def test_resolve_do_actions_missing_target(tmp_path, monkeypatch):
+    import pytest
+    from keydaemon.actions import DoAction
+
+    _write_macros(tmp_path, monkeypatch, {})
+    with pytest.raises(FileNotFoundError):
+        loader.resolve_do_actions([DoAction(name="ghost")])
+
+
+def test_resolve_do_actions_catches_toml_cycles(tmp_path, monkeypatch):
+    import pytest
+    from keydaemon.actions import DoAction
+
+    _write_macros(tmp_path, monkeypatch, {"loopy": '[actions]\nsequence = ["do:loopy"]\n'})
+    with pytest.raises(ValueError, match="Circular"):
+        loader.resolve_do_actions([DoAction(name="loopy")])

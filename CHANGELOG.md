@@ -2,6 +2,17 @@
 
 <!--next-version-placeholder-->
 
+## Unreleased
+
+- `.do("name")` on `MacroBuilder` — Python twin of the TOML `do:` verb.
+  Stored as a reference: `.run()` reads the target macro's TOML fresh each
+  time (edits to the target take effect on the next run) and flattens it
+  before the kill-key guard, so a sub-macro can't smuggle in kill-combo keys;
+  `.save()` writes `do:name` so saved macros stay composable.
+- Fixed: `do:` targeting a profile declared via `[meta] type = "profile"`
+  (rather than `[trigger]`) silently flattened to zero actions instead of
+  being rejected.
+
 ## v0.1.0 (16/07/2026)
 
 First release of `keydaemon` — a lightweight, programmable input automation

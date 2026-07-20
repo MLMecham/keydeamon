@@ -120,3 +120,20 @@ def test_expand_with_actions_roundtrips(tmp_path, monkeypatch):
     assert lm.expand_pattern == "///reload"
     assert lm.expand_replace is None
     assert lm.actions == b._actions
+
+
+def test_do_serializes_as_reference_and_roundtrips(tmp_path, monkeypatch):
+    from keydaemon.actions import WaitAction
+
+    b = MacroBuilder().tap("a").do("child").tap("b")
+    text = builder_to_toml(b, name="parent")
+    assert '"do:child"' in text  # saved as the ref, not a flattened copy
+
+    # Loading the saved file inlines the child's *current* actions.
+    (tmp_path / "parent.toml").write_text(text, encoding="utf-8")
+    (tmp_path / "child.toml").write_text(
+        '[actions]\nsequence = ["wait:0.5"]\n', encoding="utf-8"
+    )
+    monkeypatch.setattr(loader, "macro_path", lambda n: tmp_path / f"{n}.toml")
+    lm = loader.load_macro("parent")
+    assert lm.actions == [TapAction(key="a"), WaitAction(seconds=0.5), TapAction(key="b")]

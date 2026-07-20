@@ -6,6 +6,7 @@ from keydaemon._types import LOOP_FOREVER
 from keydaemon.actions import (
     Action,
     ClickAction,
+    DoAction,
     KillAllAction,
     MoveByAction,
     MoveToAction,
@@ -195,6 +196,23 @@ class MacroBuilder:
         return self
 
     # ------------------------------------------------------------------
+    # Composition
+    # ------------------------------------------------------------------
+
+    def do(self, name: str) -> MacroBuilder:
+        """Run the saved macro `name`'s action sequence at this point.
+
+        Python twin of the TOML ``do:`` verb. Stored as a reference, not a
+        copy: .run() reads the target's TOML fresh each time (editing the
+        target changes every macro that does it), and .save() writes
+        ``do:name`` so the reference survives in the file. Only the target's
+        actions run — its own scheduling (every/repeat/jitter) is ignored.
+        Circular references and profile targets are rejected at run time.
+        """
+        self._actions.append(DoAction(name=name))
+        return self
+
+    # ------------------------------------------------------------------
     # Control
     # ------------------------------------------------------------------
 
@@ -216,24 +234,28 @@ class MacroBuilder:
 
     def run(self) -> DaemonRunner | HotkeyRunner | ExpandRunner:
         from keydaemon.guard import ensure_kill_key_unreachable
+        from keydaemon.loader import resolve_do_actions
         from keydaemon.runner import DaemonRunner, ExpandRunner, HotkeyRunner
         from keydaemon.profile import Profile
 
+        # Flatten .do() refs first so the guard sees the real combined
+        # sequence — a sub-macro must not be able to smuggle in kill-combo keys.
+        actions = resolve_do_actions(self._actions)
         ensure_kill_key_unreachable(
-            self._actions, hotkey=self._hotkey, exit_key=self._exit_key
+            actions, hotkey=self._hotkey, exit_key=self._exit_key
         )
         if self._expansions or self._expand_pattern is not None:
             if self._hotkey is not None:
                 raise ValueError("A macro can't have both an expand pattern and a hotkey")
             runner = ExpandRunner(
                 pattern=self._expand_pattern,
-                actions=list(self._actions) if self._expand_pattern else None,
+                actions=actions if self._expand_pattern else None,
                 expansions=self._expansions,
             )
         elif self._hotkey is not None:
             runner = HotkeyRunner(
                 hotkey=self._hotkey,
-                actions=list(self._actions),
+                actions=actions,
                 interval=self._interval,
                 repeat_times=self._repeat_times,
                 jitter=self._jitter,
@@ -241,7 +263,7 @@ class MacroBuilder:
             )
         else:
             runner = DaemonRunner(
-                actions=list(self._actions),
+                actions=actions,
                 interval=self._interval,
                 repeat_times=self._repeat_times,
                 jitter=self._jitter,

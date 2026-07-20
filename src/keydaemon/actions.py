@@ -265,6 +265,28 @@ class _SelfStop(Exception):
 
 
 # ---------------------------------------------------------------------------
+# Composition
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class DoAction:
+    """Reference to another saved macro's action sequence (builder ``.do()``).
+
+    A reference, never executed: MacroBuilder.run() flattens it into the
+    target's actions via loader.resolve_do_actions() before any runner sees
+    it, and .save() writes it back as a ``do:<name>`` string (the TOML loader
+    flattens that form itself at load time).
+    """
+    name: str
+
+    def execute(self, ctrl: InputController, stop_requested: Callable[[], bool] = lambda: False) -> None:
+        raise RuntimeError(
+            f"Unresolved do-reference to macro {self.name!r} — a resolution "
+            "step was skipped before running"
+        )
+
+
+# ---------------------------------------------------------------------------
 # Union type
 # ---------------------------------------------------------------------------
 
@@ -281,4 +303,5 @@ Action = (
     | WaitForColorAction
     | SelfStopAction
     | KillAllAction
+    | DoAction
 )

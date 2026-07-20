@@ -202,6 +202,11 @@ run = ["afk_jump", "autofill_a", "farm_sequence"]
 - `do` is resolved at **load time** (flattened into the parent sequence)
 - The runner never knows `do` existed — it just sees a flat action list
 - Circular `do` detection handled in loader (track seen files, raise on cycle)
+- Python twin: `.do("name")` on MacroBuilder stores a `DoAction` *reference*;
+  `.run()` flattens it via `loader.resolve_do_actions()` (fresh read of the
+  target's TOML, then the kill-key guard sees the combined sequence) and
+  `.save()` writes it back as `do:name` — saved macros stay composable.
+  Name-only by design: `.do(builder)` has no TOML representation.
 
 ---
 
@@ -450,10 +455,9 @@ is refused), logs to `keydaemon.log`. Liveness probing on Windows uses ctypes
   useful constants at the top for one-spot editing — an expand template with a
   `PREFIX = "///"` constant, a toggle template shaped like examples/autoclicker.py,
   and condition templates once `if_color` lands.
-- `.do("macro_name")` on MacroBuilder — Python equivalent of the TOML `do:` action
-  (inline a saved macro's sequence; loader `_load_do` already implements the
-  resolution). `.save()` should ideally keep the `do:` reference instead of
-  flattening, so saved macros stay composable.
+- `.do(builder, as_name=...)` — accept another MacroBuilder in `.do()` by
+  saving it as its own TOML first (name-based `.do()` shipped in v1; anonymous
+  builders have no TOML representation, so they'd have to be materialized).
 - `hold` hotkey mode (act while key held — needs key-release events; GlobalHotKeys only gives activate)
 - Graceful shutdown for detached processes: child polls a stop-sentinel file and
   calls `stop_all()` (releasing held inputs); `keydaemon stop` escalates to

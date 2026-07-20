@@ -14,6 +14,7 @@ from keydaemon._types import LOOP_FOREVER
 from keydaemon.actions import (
     Action,
     ClickAction,
+    DoAction,
     KillAllAction,
     MoveByAction,
     MoveToAction,
@@ -105,10 +106,32 @@ def _load_do(name: str, source_path: Path, seen: set[str]) -> list[Action]:
         raise ValueError(f"Circular do reference detected: {name!r}")
     seen = seen | {key}
     data = _read_toml(path)
-    trigger_type = data.get("trigger", {}).get("type", "manual")
+    # Profiles declare their type in [trigger] or [meta] (see is_profile).
+    trigger_type = (
+        data.get("trigger", {}).get("type")
+        or data.get("meta", {}).get("type")
+        or "manual"
+    )
     if trigger_type == "profile":
         raise ValueError(f"Cannot use 'do' with a profile macro: {name!r}")
     return _parse_sequence(data.get("actions", {}).get("sequence", []), path, seen)
+
+
+def resolve_do_actions(actions: list[Action]) -> list[Action]:
+    """Flatten DoAction refs (MacroBuilder.do) into the target macros' actions.
+
+    Python twin of the TOML ``do:`` verb, resolved with the same machinery.
+    Called at .run() time so the target's *current* TOML is read — editing the
+    target changes every macro that does it on their next run. Circular chains
+    and profile targets are rejected exactly as in TOML loading.
+    """
+    resolved: list[Action] = []
+    for action in actions:
+        if isinstance(action, DoAction):
+            resolved.extend(_load_do(action.name, macro_path(action.name), set()))
+        else:
+            resolved.append(action)
+    return resolved
 
 
 def _parse_sequence(raw_list: list[str], source_path: Path, seen: set[str]) -> list[Action]:

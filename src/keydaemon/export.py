@@ -20,6 +20,7 @@ from keydaemon._types import LOOP_FOREVER
 from keydaemon.actions import (
     Action,
     ClickAction,
+    DoAction,
     KillAllAction,
     MoveByAction,
     MoveToAction,
@@ -78,6 +79,10 @@ def _action_str(a: Action) -> str:
         return "stop:self"
     if isinstance(a, KillAllAction):
         return "stop:all"
+    if isinstance(a, DoAction):
+        # Saved as the reference, not a flattened copy — the loader inlines
+        # the target's current actions at load time.
+        return f"do:{a.name}"
     raise ValueError(f"Action {type(a).__name__} can't be expressed in TOML")
 
 

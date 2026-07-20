@@ -148,4 +148,19 @@ pattern = "///sig"
 replace = "Mitchell Mecham | mechamit000@gmail.com"
 ```
 
-TOML files can also reference each other with `do:` — `"do:open_inventory"` inlines another macro's sequence at load time (cycles rejected). That part has no Python equivalent yet; compose in Python with ordinary function calls instead.
+## Compose macros with `.do()`
+
+Macros can reference each other by name — `.do("open_inventory")` runs that saved macro's action sequence inline at that point, and TOML files write the same thing as `"do:open_inventory"`:
+
+```python
+import keydaemon
+
+(keydaemon.macro()
+    .do("open_inventory")     # runs open_inventory.toml's actions here
+    .tap("3").click()
+    .do("close_inventory")
+    .every(30).loop()
+    .save("farm_sequence"))
+```
+
+`.do()` stores a **reference, not a copy** — the target's TOML is read fresh on every `.run()`, and `.save()` writes `do:name` into the file. So editing `open_inventory` (by hand or by re-running its script) updates every macro that does it, automatically. Only the target's actions are inlined; its own timing (`every`/`repeat`) is ignored, cycles are rejected, and profiles can't be `do`'d.
